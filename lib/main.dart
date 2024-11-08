@@ -1,4 +1,5 @@
 import 'package:day_plan_diary/Screens/home.dart';
+import 'package:day_plan_diary/Screens/newtask.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -17,7 +18,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Home(),
+      home: HomePage(),
+      routes: {
+        '/newtask': (context) => const CreateTaskPage(),
+      },
     );
   }
 }
