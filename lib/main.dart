@@ -1,27 +1,31 @@
-import 'package:day_plan_diary/Screens/home.dart';
+  import 'package:day_plan_diary/Screens/home.dart';
 import 'package:day_plan_diary/Screens/newtask.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
-  runApp(
-    MyApp(),
-  );
-}
+  void main() async {
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomePage(),
-      routes: {
-        '/newtask': (context) => const CreateTaskPage(),
-      },
+  await Hive.initFlutter();
+  await Hive.openBox('tasksBox');
+    runApp(
+      const MyApp(),
     );
   }
-}
+
+  class MyApp extends StatelessWidget {
+    const MyApp({super.key});
+
+    @override
+    Widget build(BuildContext context) {
+      return MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const HomePage(),
+        routes: {
+          '/newtask': (context) => const CreateTaskPage(),
+        },
+      );
+    }
+  }

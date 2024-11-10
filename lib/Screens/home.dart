@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -124,7 +125,7 @@ class _ToDoBodyState extends State<ToDoBody> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: !isTodoSelected ? Colors.black : Colors.grey,
+                      color: !isTodoSelected ? Colors.black : const Color.fromARGB(228, 158, 158, 158),
                     ),
                   ),
                 ),
@@ -140,30 +141,48 @@ class _ToDoBodyState extends State<ToDoBody> {
   }
 }
 
+
 class TodoList extends StatelessWidget {
   final bool isTodoSelected;
   const TodoList({super.key, required this.isTodoSelected});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: List.generate(10, (index) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ToDoItem(
-              title: 'Task ${index + 1}',
-              description: 'Description of task ${index + 1}',
-              priority: 'High',
-              isCompleted: !isTodoSelected,
-            ),
+    final Box taskBox = Hive.box('tasksBox'); 
+
+    return ValueListenableBuilder(
+      valueListenable: taskBox.listenable(),
+      builder: (context, Box box, _) {
+        final tasks = box.values.where((task) {
+          return task['isCompleted'] == !isTodoSelected;
+        }).toList();
+
+        if (tasks.isEmpty) {
+          return const Center(
+            child: Text('No tasks available'),
           );
-        }),
-      ),
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            children: List.generate(tasks.length, (index) {
+              final task = tasks[index];
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ToDoItem(
+                  title: task['title'] ?? 'Untitled',
+                  description: task['description'] ?? 'No description',
+                  priority: task['priority'] ?? 'Medium',
+                  isCompleted: task['isCompleted'] ?? true,
+                ),
+              );
+            }),
+          ),
+        );
+      },
     );
   }
 }
-
 
 class ToDoItem extends StatelessWidget {
   final String title;
@@ -171,7 +190,8 @@ class ToDoItem extends StatelessWidget {
   final String priority;
   final bool isCompleted;
 
-  const ToDoItem({super.key, 
+  const ToDoItem({
+    super.key,
     required this.title,
     required this.description,
     required this.priority,
@@ -194,7 +214,7 @@ class ToDoItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               description,
-              style: const TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+              style: const TextStyle(color: Colors.black54),
             ),
             const SizedBox(height: 8),
             Row(
@@ -215,82 +235,3 @@ class ToDoItem extends StatelessWidget {
     );
   }
 }
-
-
-
-
-// import 'package:flutter/material.dart';
-
-// class Home extends StatelessWidget {
-//   const Home({super.key});
-
-//   @override
-
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-      
-//       appBar: AppBar(
-//         actions: [
-//           Padding(
-//             padding: const EdgeInsets.all(6.0),
-//             child: SizedBox(
-//               width: 380,
-//               height: 80,
-//               child: Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                
-//                 children: [
-//                   const Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text("Hello",
-//                       style: TextStyle(
-//                         fontSize: 12.0,
-//                         color: Colors.black45
-//                       ),),
-//                       Text("Name", style: TextStyle(
-//                         fontSize: 18.0,
-//                         color: Colors.black,
-//                         fontWeight: FontWeight.bold
-//                       ),),
-//                     ],
-//                   ),
-//                   CircleAvatar(
-//                     radius: 20.0,
-//                     child: ClipOval(
-//                       child: Image.network(
-//                         'https://avatars.githubusercontent.com/u/83787860?v=4',
-//                         width: 40,
-//                         height: 40,
-//                         fit: BoxFit.cover,
-                        
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           )
-//         ],
-//       ),
-//       body: Container(
-//         padding: const EdgeInsets.all(20.0),
-//           child: const Column(
-//             children: [
-//               Row(children: [
-//                 Text("Today", style: TextStyle(
-//                   fontSize: 32.0,
-//                   fontWeight: FontWeight.bold
-//                 ),),
-//                 Spacer(),
-//                 Text("View All", style: TextStyle(
-//                   fontSize: 16.0,
-//                   color: Colors.blue
-//                 ),)
-//               ],)
-//             ],
-//           )
-//       ),
-//     );
-//   }
-// }
