@@ -35,7 +35,7 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: const ToDoBody(), 
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.all(3.0),
         child: FloatingActionButton(
@@ -58,93 +58,111 @@ class ToDoBody extends StatefulWidget {
 }
 
 class _ToDoBodyState extends State<ToDoBody> {
-  String selectedPriority = 'High'; 
+  String selectedPriority = 'All'; 
   bool isTodoSelected = true; 
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height :700,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Tasks',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                DropdownButton<String>(
-                  value: selectedPriority,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedPriority = newValue!;
-                    });
-                  },
-                  items: <String>['All', 'High', 'Medium', 'Low']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isTodoSelected = true;
-                    });
-                  },
-                  child: Text(
-                    'TODO',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isTodoSelected ? Colors.black : Colors.grey,
+    
+    return Container(
+
+      color: Colors.white,
+      child: SizedBox(
+        height :630,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Tasks',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ), SizedBox(
+                    width: 100,
+                    height: 35,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      alignment: Alignment.center,
+                      child: DropdownButton<String>(
+                          borderRadius: BorderRadius.circular(10),
+                          value: selectedPriority,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedPriority = newValue!;
+                            } );
+                          },
+                          items: <String>['All', 'High', 'Medium', 'Low']
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value, style: const TextStyle(color: Color.fromARGB(146, 0, 0, 0))),
+                            );
+                          }).toList(),
+                        ),
                     ),
                   ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isTodoSelected = false;
-                    });
-                  },
-                  child: Text(
-                    'COMPLETED',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: !isTodoSelected ? Colors.black : const Color.fromARGB(228, 158, 158, 158),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        isTodoSelected = true;
+                      });
+                    },
+                    child: Text(
+                      'TODO',
+                      
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isTodoSelected ?  const Color.fromARGB(206, 87, 39, 176) : Colors.grey,
+                        
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        isTodoSelected = false;
+                      });
+                    },
+                    child: Text(
+                      'COMPLETED',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isTodoSelected ?Colors.grey:  const Color.fromARGB(206, 87, 39, 176) ,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: TodoList(isTodoSelected: isTodoSelected), 
-          ),
-        ],
+            Expanded(
+              child: TodoList(isTodoSelected: isTodoSelected, selectedPriority: selectedPriority), 
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-
 class TodoList extends StatelessWidget {
-  final bool isTodoSelected;
-  const TodoList({super.key, required this.isTodoSelected});
+  String selectedPriority;
+  bool isTodoSelected;
+  TodoList({super.key, required this.isTodoSelected, required this.selectedPriority});
 
   @override
   Widget build(BuildContext context) {
@@ -153,8 +171,15 @@ class TodoList extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: taskBox.listenable(),
       builder: (context, Box box, _) {
+        // Safely retrieve and filter tasks
         final tasks = box.values.where((task) {
-          return task['isCompleted'] == !isTodoSelected;
+          if (task is Map) {
+            if (selectedPriority == 'All') {
+              return task['isCompleted'] == !isTodoSelected;
+            }
+            return task['isCompleted'] == !isTodoSelected && ( task['priority'] == selectedPriority );
+          }
+          return false;
         }).toList();
 
         if (tasks.isEmpty) {
@@ -164,16 +189,18 @@ class TodoList extends StatelessWidget {
         }
 
         return SingleChildScrollView(
+          scrollDirection: Axis.vertical,
           child: Column(
             children: List.generate(tasks.length, (index) {
-              final task = tasks[index];
+              final task = tasks[index] as Map; 
+
               return Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(3),
                 child: ToDoItem(
                   title: task['title'] ?? 'Untitled',
-                  description: task['description'] ?? 'No description',
+                  date: task['date'] ?? 'No date',
                   priority: task['priority'] ?? 'Medium',
-                  isCompleted: task['isCompleted'] ?? true,
+                  isCompleted: task['isCompleted'] ?? false,
                 ),
               );
             }),
@@ -184,16 +211,18 @@ class TodoList extends StatelessWidget {
   }
 }
 
+
 class ToDoItem extends StatelessWidget {
   final String title;
-  final String description;
+  final String date;
+
   final String priority;
   final bool isCompleted;
 
   const ToDoItem({
     super.key,
     required this.title,
-    required this.description,
+    required this.date,
     required this.priority,
     required this.isCompleted,
   });
@@ -212,21 +241,29 @@ class ToDoItem extends StatelessWidget {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
-            Text(
-              description,
-              style: const TextStyle(color: Colors.black54),
-            ),
             const SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Text(
-                  'Priority: $priority',
-                  style: const TextStyle(color: Colors.blueAccent),
+                Text(date),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: (priority == 'High')
+                      ? const Icon(Icons.check_circle, color: Color.fromARGB(255, 241, 2, 2))
+                      : (priority == 'Medium')
+                      ? const Icon(Icons.check_circle, color: Color.fromARGB(255, 250, 233, 0))
+                      : (const Icon(Icons.check_circle, color: Color.fromARGB(122, 42, 25, 194))),
                 ),
-                isCompleted
-                    ? const Icon(Icons.check_circle, color: Colors.green)
-                    : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
+                Padding(
+                  padding: const EdgeInsets.only(left: 6.0),
+                  child: Text(
+                    priority,
+                    style: const TextStyle(color: Colors.blueAccent),
+                  ),
+                ),
+                
+                
+                
               ],
             ),
           ],

@@ -20,7 +20,7 @@ import 'package:hive_flutter/hive_flutter.dart';
       return MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          // primarySwatch: Colors.blue,
         ),
         home: const HomePage(),
         routes: {
