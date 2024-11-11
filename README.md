@@ -91,14 +91,14 @@ Future Improvements
     Task Search: Implement a search feature to filter tasks based on keywords or due date.
 
 8. Screen shots
-{![image](https://github.com/user-attachments/assets/e17e74b0-4f80-47cb-90e1-990352e2ce72) 
-8.1 Homepage ToDo tasks}
-![image](https://github.com/user-attachments/assets/6d239fd7-5fbf-4c82-8d0d-96e6c71423fc) 
-8.2 Homepage ToDo tasks Sorting(Medium Priority)
-![image](https://github.com/user-attachments/assets/10f6741f-b284-4662-a98e-e5228564df30) 
-8.3 Homepage Completed tasks
-![image](https://github.com/user-attachments/assets/56efc98d-3d12-44b2-a114-e76b8689b183) 
-8.4 Add new task
+![image](https://github.com/user-attachments/assets/e17e74b0-4f80-47cb-90e1-990352e2ce72 "8.1 Homepage ToDo tasks") 
+
+![image](https://github.com/user-attachments/assets/6d239fd7-5fbf-4c82-8d0d-96e6c71423fc "8.2 Homepage ToDo tasks Sorting(Medium Priority)") 
+
+![image](https://github.com/user-attachments/assets/10f6741f-b284-4662-a98e-e5228564df30 "8.3 Homepage Completed tasks") 
+
+![image](https://github.com/user-attachments/assets/56efc98d-3d12-44b2-a114-e76b8689b183 "8.4 Add new task") 
+
 
 
 
