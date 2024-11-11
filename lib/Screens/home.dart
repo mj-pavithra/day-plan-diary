@@ -61,6 +61,7 @@ class _ToDoBodyState extends State<ToDoBody> {
   String selectedPriority = 'All'; 
   bool isTodoSelected = true; 
 
+
   @override
   Widget build(BuildContext context) {
     
@@ -164,6 +165,40 @@ class TodoList extends StatelessWidget {
   bool isTodoSelected;
   TodoList({super.key, required this.isTodoSelected, required this.selectedPriority});
 
+  void _confirmDelete(BuildContext context, Box taskBox, task) {
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Delete Task"),
+          content: const Text("Are you sure you want to delete this task?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                taskBox.delete(task);
+                Navigator.of(context).pop(); // Close the dialog after deleting
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Task deleted successfully"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              },
+              child: const Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final Box taskBox = Hive.box('tasksBox'); 
@@ -196,11 +231,25 @@ class TodoList extends StatelessWidget {
 
               return Padding(
                 padding: const EdgeInsets.all(3),
-                child: ToDoItem(
-                  title: task['title'] ?? 'Untitled',
-                  date: task['date'] ?? 'No date',
-                  priority: task['priority'] ?? 'Medium',
-                  isCompleted: task['isCompleted'] ?? false,
+                child: GestureDetector(
+                 
+          onLongPress: (){
+            _confirmDelete(context, taskBox, box.keys.toList()[index]);
+          },
+          onDoubleTap: (){
+
+                print(task);
+                    Navigator.pushNamed(context, '/updatetask', arguments: {
+                      'taskData': task,
+                      'taskIndex': box.keys.toList()[index],
+                    });
+          },
+                  child:  ToDoItem(
+                    title: task['title'] ?? 'Untitled',
+                    date: task['date'] ?? 'No date',
+                    priority: task['priority'] ?? 'Medium',
+                    isCompleted: task['isCompleted'] ?? false,
+                  ),
                 ),
               );
             }),
@@ -231,7 +280,9 @@ class ToDoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
+      child:GestureDetector(
+        onTap: () => print('Task tapped'),
+        child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,6 +320,8 @@ class ToDoItem extends StatelessWidget {
           ],
         ),
       ),
+      )
+       
     );
   }
 }
