@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 class UpdateTaskPage extends StatefulWidget {
   final int taskIndex; 
-  final Map<String, dynamic> taskData; 
+  final Map taskData; 
 
   const UpdateTaskPage({super.key, required this.taskIndex, required this.taskData});
 
@@ -14,6 +14,7 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   String selectedPriority = 'Select Priority';
+  bool setCompleted = false;
 
   @override
   void initState() {
@@ -21,42 +22,44 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
     titleController.text = widget.taskData['title'];
     dateController.text = widget.taskData['date'];
     selectedPriority = widget.taskData['priority'];
+    setCompleted = widget.taskData['isCompleted'];
   }
 
   void updateTask() async {
-    if (titleController.text.isEmpty || dateController.text.isEmpty || selectedPriority == 'Select Priority') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all the fields correctly'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+  if (titleController.text.isEmpty || dateController.text.isEmpty || selectedPriority == 'Select Priority') {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please fill all the fields correctly'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
 
-    DateTime selectedDate = DateTime.parse(dateController.text);
-    if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Dont be stupid, you cant add tasks for past dates'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+  DateTime selectedDate = DateTime.parse(dateController.text);
+  if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('You cannot add tasks for past dates'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
 
-    var taskBox = Hive.box('tasksBox');
-    var updatedTaskData = {
-      'title': titleController.text,
-      'date': dateController.text,
-      'priority': selectedPriority,
-      'isCompleted': widget.taskData['isCompleted'],
-    };
+  var taskBox = Hive.box('tasksBox');
+  var updatedTaskData = {
+    'title': titleController.text,
+    'date': dateController.text,
+    'priority': selectedPriority,
+    'isCompleted': setCompleted,
+  };
 
+
+  if ((widget.taskIndex-20) < taskBox.length) {
     try {
-      await taskBox.putAt(widget.taskIndex, updatedTaskData); 
+      await taskBox.putAt(widget.taskIndex-20, updatedTaskData);
       Navigator.pop(context);
-      print('Task updated successfully');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Task updated successfully!'),
@@ -72,7 +75,15 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
         ),
       );
     }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+       SnackBar(
+        content: Text("${widget.taskIndex} "),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -161,6 +172,8 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
                   ),
                 ),
               ),
+              const Spacer(),
+              Checkbox(value: setCompleted, onChanged: (bool? value) { setState(() { setCompleted = value ?? false; }); }),
               const Spacer(),
               Center(
                 child: ElevatedButton(

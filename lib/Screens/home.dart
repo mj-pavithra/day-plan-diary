@@ -176,14 +176,15 @@ class TodoList extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop(); 
               },
               child: const Text("Cancel"),
             ),
             TextButton(
               onPressed: () {
                 taskBox.delete(task);
-                Navigator.of(context).pop(); // Close the dialog after deleting
+                print(task);
+                Navigator.of(context).pop(); 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text("Task deleted successfully"),
@@ -206,7 +207,6 @@ class TodoList extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: taskBox.listenable(),
       builder: (context, Box box, _) {
-        // Safely retrieve and filter tasks
         final tasks = box.values.where((task) {
           if (task is Map) {
             if (selectedPriority == 'All') {
@@ -240,8 +240,8 @@ class TodoList extends StatelessWidget {
 
                 print(task);
                     Navigator.pushNamed(context, '/updatetask', arguments: {
-                      'taskData': task,
                       'taskIndex': box.keys.toList()[index],
+                      'taskData': task,
                     });
           },
                   child:  ToDoItem(

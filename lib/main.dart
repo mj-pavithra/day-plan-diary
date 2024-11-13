@@ -21,14 +21,13 @@ import 'package:hive_flutter/hive_flutter.dart';
       return MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          // primarySwatch: Colors.blue,
         ),
         home: const HomePage(),
         routes: {
           '/newtask': (context) => const CreateTaskPage(),
           '/updatetask': (context) {
-            final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-            return UpdateTaskPage(taskData: args['taskData'], taskIndex: args['taskIndex']);
+            final args = ModalRoute.of(context)!.settings.arguments as Map;
+            return UpdateTaskPage(taskIndex: args['taskIndex'] ,taskData: args['taskData']);
           }
         },
       );
