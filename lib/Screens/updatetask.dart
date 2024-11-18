@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import '/snackbar_utils.dart';
+import '../strings.dart';
+
 class UpdateTaskPage extends StatefulWidget {
-  final int taskIndex; 
-  final Map taskData; 
+  final int taskIndex;
+  final Map taskData;
+
 
   const UpdateTaskPage({super.key, required this.taskIndex, required this.taskData});
 
@@ -13,7 +17,7 @@ class UpdateTaskPage extends StatefulWidget {
 class _UpdateTaskPageState extends State<UpdateTaskPage> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
-  String selectedPriority = 'Select Priority';
+  String selectedPriority = SelectPriority;
   bool setCompleted = false;
 
   @override
@@ -26,64 +30,52 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
   }
 
   void updateTask() async {
-  if (titleController.text.isEmpty || dateController.text.isEmpty || selectedPriority == 'Select Priority') {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please fill all the fields correctly'),
+    if (titleController.text.isEmpty || dateController.text.isEmpty || selectedPriority == SelectPriority) {
+      SnackbarUtils.showSnackbar(
+        FillFieldsError,
         backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  DateTime selectedDate = DateTime.parse(dateController.text);
-  if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('You cannot add tasks for past dates'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  var taskBox = Hive.box('tasksBox');
-  var updatedTaskData = {
-    'title': titleController.text,
-    'date': dateController.text,
-    'priority': selectedPriority,
-    'isCompleted': setCompleted,
-  };
-
-
-  if ((widget.taskIndex-20) < taskBox.length) {
-    try {
-      await taskBox.putAt(widget.taskIndex-20, updatedTaskData);
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task updated successfully!'),
-          backgroundColor: Colors.green,
-        ),
       );
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error updating task: $e'),
+      return;
+    }
+
+    DateTime selectedDate = DateTime.parse(dateController.text);
+    if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+      SnackbarUtils.showSnackbar(
+        PastDateError,
+        backgroundColor: Colors.red,
+      );
+      return;
+    }
+
+    var taskBox = Hive.box('tasksBox');
+    var updatedTaskData = {
+      'title': titleController.text,
+      'date': dateController.text,
+      'priority': selectedPriority,
+      'isCompleted': setCompleted,
+    };
+
+    if ((widget.taskIndex ) < taskBox.length) {
+      try {
+        await taskBox.putAt(widget.taskIndex , updatedTaskData);
+        Navigator.pop(context);
+        SnackbarUtils.showSnackbar(
+          TaskUpdateSuccess,
+          backgroundColor: Colors.green,
+        );
+      } catch (e) {
+        SnackbarUtils.showSnackbar(
+          '$TaskUpdateError$e',
           backgroundColor: Colors.red,
-        ),
+        );
+      }
+    } else {
+      SnackbarUtils.showSnackbar(
+        "${widget.taskIndex}",
+        backgroundColor: Colors.red,
       );
     }
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-       SnackBar(
-        content: Text("${widget.taskIndex} "),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +85,7 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Update Task"),
+        title: const SafeArea(child: Text(TaskUpdateTitle)),
       ),
       body: Container(
         color: Colors.white,
@@ -105,7 +97,7 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
               const Padding(
                 padding: EdgeInsets.only(bottom: 8.0),
                 child: Text(
-                  'Update your task',
+                  UpdateYourTask,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -114,12 +106,11 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
                 child: TextField(
                   controller: titleController,
                   decoration: const InputDecoration(
-                    labelText: 'Title',
+                    labelText: TitleLabel,
                     labelStyle: TextStyle(color: Colors.grey),
                     filled: false,
                     border: OutlineInputBorder(gapPadding: 2),
                     fillColor: Color.fromARGB(255, 255, 255, 255),
-                    iconColor:Colors.grey,
                   ),
                 ),
               ),
@@ -129,7 +120,7 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
                   controller: dateController,
                   readOnly: false,
                   decoration: InputDecoration(
-                    labelText: 'Date',
+                    labelText: DateLabel,
                     filled: false,
                     border: const OutlineInputBorder(gapPadding: 2),
                     labelStyle: const TextStyle(color: Colors.grey),
@@ -159,12 +150,18 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
                       selectedPriority = newValue!;
                     });
                   },
-                  items: ['Select Priority','High', 'Medium', 'Low']
-                      .map((priority) => DropdownMenuItem(
-                            value: priority,
-                            child: Text(priority, style: const TextStyle(color: Colors.grey),),
-                          ))
-                      .toList(),
+                  items: [
+                    SelectPriority,
+                    HighPriority,
+                    MediumPriority,
+                    LowPriority
+                  ].map((priority) => DropdownMenuItem(
+                    value: priority,
+                    child: Text(
+                      priority,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  )).toList(),
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(gapPadding: 2),
                     fillColor: Color.fromARGB(255, 255, 255, 255),
@@ -173,7 +170,24 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
                 ),
               ),
               const Spacer(),
-              Checkbox(value: setCompleted, onChanged: (bool? value) { setState(() { setCompleted = value ?? false; }); }),
+              Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(left: 12.0),
+                    child: Text(
+                      SetAsCompleted,
+                      style: TextStyle(fontSize: 16, color: Color.fromARGB(210, 11, 81, 172)),
+                    ),
+                  ),
+                  Checkbox(
+                      value: setCompleted,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          setCompleted = value ?? false;
+                        });
+                      }),
+                ],
+              ),
               const Spacer(),
               Center(
                 child: ElevatedButton(
@@ -185,7 +199,10 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text('Update', style: TextStyle(fontSize: 20, color: Colors.white)),
+                  child: const Text(
+                    UpdateButtonText,
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  ),
                 ),
               ),
             ],
