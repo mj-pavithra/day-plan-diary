@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '/snackbar_utils.dart';
 import '../strings.dart';
+import 'package:hive/hive.dart';
+import '../ForHive/task.dart';
 
 class UpdateTaskPage extends StatefulWidget {
   final int taskIndex;
@@ -47,17 +49,24 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
       return;
     }
 
-    var taskBox = Hive.box('tasksBox');
-    var updatedTaskData = {
-      'title': titleController.text,
-      'date': dateController.text,
-      'priority': selectedPriority,
-      'isCompleted': setCompleted,
-    };
+    final taskBox = Hive.box<Task>('tasksBox');
+    // final taskBox = Hive.box('tasksBox');
+    // var updatedTaskData = {
+    //   'title': titleController.text,
+    //   'date': dateController.text,
+    //   'priority': selectedPriority,
+    //   'isCompleted': setCompleted,
+    // };
 
     if ((widget.taskIndex ) < taskBox.length) {
       try {
-        await taskBox.putAt(widget.taskIndex , updatedTaskData);
+        final updatedTask = Task(
+          title: titleController.text,
+          date: dateController.text,
+          priority: selectedPriority,
+          isCompleted: setCompleted,
+        );
+        await taskBox.put(widget.taskIndex , updatedTask );
         Navigator.pop(context);
         SnackbarUtils.showSnackbar(
           TaskUpdateSuccess,

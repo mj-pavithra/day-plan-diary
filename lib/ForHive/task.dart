@@ -22,7 +22,9 @@ class Task {
 
   @HiveField(3)
 
-  bool isCompleted;Map<String, dynamic> toMap() {
+  bool isCompleted;
+
+  Map<String, dynamic> toMap() {
     return {
       'title': title,
       'date': date,
