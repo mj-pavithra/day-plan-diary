@@ -1,5 +1,7 @@
+import 'package:day_plan_diary/main.dart';
 import 'package:flutter/material.dart';
 import 'package:day_plan_diary/snackbar_utils.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../ForHive/task.dart';
 import '../strings.dart';
@@ -22,7 +24,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   }
 
   void saveTask() async {
-    // Validation checks
     if (titleController.text.isEmpty ||
         dateController.text.isEmpty ||
         selectedPriority == selectPriority) {
@@ -42,7 +43,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
       return;
     }
 
-    // Create a Task object
     final task = Task(
       title: titleController.text,
       date: dateController.text,
@@ -51,12 +51,10 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     );
 
     try {
-      // Save Task object to Hive
       final taskBox = Hive.box<Task>('tasksBox');
       await taskBox.add(task);
 
-      // Navigate back and show success message
-      Navigator.pop(context);
+      context.go('/');
       SnackbarUtils.showSnackbar(
         snackbarSaveSuccess,
         backgroundColor: Colors.green,

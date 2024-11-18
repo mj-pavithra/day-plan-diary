@@ -1,4 +1,6 @@
+import 'package:day_plan_diary/main.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import '/snackbar_utils.dart';
 import '../strings.dart';
@@ -67,7 +69,7 @@ class _UpdateTaskPageState extends State<UpdateTaskPage> {
           isCompleted: setCompleted,
         );
         await taskBox.put(widget.taskIndex , updatedTask );
-        Navigator.pop(context);
+        context.go('/');
         SnackbarUtils.showSnackbar(
           TaskUpdateSuccess,
           backgroundColor: Colors.green,

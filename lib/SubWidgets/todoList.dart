@@ -1,5 +1,6 @@
 import 'package:day_plan_diary/SubWidgets/todoItem.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../ForHive/task.dart';
 import 'package:day_plan_diary/snackbar_utils.dart';
@@ -136,10 +137,15 @@ class TodoList extends StatelessWidget {
                   onDoubleTap: () {
                     print(box.keys.toList()[index]);
                     print(taskMap);
-                    Navigator.pushNamed(context, '/updatetask', arguments: {
-                      'taskIndex': box.keys.toList()[index],
-                      'taskData': taskMap,
-                    });
+                    context.go(
+                      '/updatetask',
+                      extra: {
+                        'taskIndex': box.keys.toList()[index],
+                        'taskData': taskMap,
+                      },
+                    );
+
+
                   },
                   child: ToDoItem(
                     title: task.title,
