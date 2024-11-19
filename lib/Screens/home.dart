@@ -1,4 +1,6 @@
+import 'package:day_plan_diary/main.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:day_plan_diary/SubWidgets/todoBody.dart';
 
@@ -43,7 +45,7 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(3.0),
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.pushNamed(context, '/newtask');
+            context.go('/newtask');
           },
           backgroundColor: const Color.fromARGB(206, 87, 39, 176),
           child: const Icon(Icons.add, color: Colors.white,size: 40,),

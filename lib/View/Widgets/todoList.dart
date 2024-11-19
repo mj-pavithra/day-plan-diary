@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:day_plan_diary/ViewModels/todoListViewModel.dart';
 import 'package:provider/provider.dart';
-import '../ViewModels/todo_list_view_model.dart';
-import '../Widgets/todo_item.dart';
+import 'package:day_plan_diary/ViewModels/todoItemViewModel.dart';
+import '../Widgets/todoItem.dart';
 
 class TodoList extends StatelessWidget {
   final String selectedPriority;
@@ -54,36 +55,40 @@ class TodoList extends StatelessWidget {
           final task = tasks[index];
           final taskKey = viewModel.filteredTasks[index];
 
+          // Create TodoItemViewModel for each task
+          final taskViewModel = TodoItemViewModel(
+            title: task.title,
+            date: task.date,
+            priority: task.priority,
+            isCompleted: task.isCompleted,
+          );
+
           return Padding(
             padding: const EdgeInsets.all(3),
             child: GestureDetector(
               onHorizontalDragEnd: (details) {
                 if (details.primaryVelocity! > 0) {
-                  // Handle right swipe (edit task)
+                  // right to edit task
                   Navigator.pushNamed(context, '/updatetask', arguments: {
                     'taskIndex': taskKey,
                     'taskData': task.toMap(),
                   });
                 } else {
-                  // Handle left swipe (delete task)
+                  // Left to delete task
                   _confirmDelete(context, viewModel, taskKey);
                 }
               },
               onDoubleTap: () {
-                context.go(
+                Navigator.pushNamed(
+                  context,
                   '/updatetask',
-                  extra: {
+                  arguments: {
                     'taskIndex': taskKey,
                     'taskData': task.toMap(),
                   },
                 );
               },
-              child: ToDoItem(
-                title: task.title,
-                date: task.date,
-                priority: task.priority,
-                isCompleted: task.isCompleted,
-              ),
+              child: ToDoItem(viewModel: taskViewModel), // Pass ViewModel here
             ),
           );
         }),

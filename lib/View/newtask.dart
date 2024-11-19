@@ -1,4 +1,3 @@
-import 'package:day_plan_diary/main.dart';
 import 'package:flutter/material.dart';
 import 'package:day_plan_diary/snackbar_utils.dart';
 import 'package:go_router/go_router.dart';
