@@ -1,18 +1,19 @@
-import 'package:day_plan_diary/ForHive/task.dart';
-import 'package:day_plan_diary/Screens/home.dart';
-import 'package:day_plan_diary/Screens/newtask.dart';
-import 'package:day_plan_diary/Screens/updatetask.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'ForHive/boxes.dart';
-import 'snackbar_utils.dart';
+import 'package:provider/provider.dart';
+
+import './ViewModels/HomePageViewModel.dart';
+import 'Models/task.dart';
+import 'Services/hiveService.dart';
+import 'View/home.dart';
+import 'View/newtask.dart';
+import 'View/updatetask.dart';
 
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
-  boxTask = await Hive.openBox<Task>('tasksBox');
-  boxTest = await Hive.openBox('testBox');
+  await HiveService.initializeHive(); 
   runApp(const MyApp());
 }
 
@@ -21,7 +22,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define GoRouter instance
     final GoRouter router = GoRouter(
       routes: [
         GoRoute(
@@ -45,11 +45,15 @@ class MyApp extends StatelessWidget {
       ],
     );
 
-    return MaterialApp.router(
-      scaffoldMessengerKey: SnackbarUtils.messengerKey,
-      title: 'Flutter Demo',
-      theme: ThemeData(),
-      routerConfig: router,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => HomePageViewModel(),
+        ),
+      ],
+      child: MaterialApp.router(
+        routerConfig: router,
+      ),
     );
   }
 }
