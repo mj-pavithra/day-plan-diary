@@ -1,17 +1,27 @@
 import 'package:go_router/go_router.dart';
 import '../View/home.dart';
 import '../View/newtask.dart';
+import '../View/updatetask.dart';
 
-final router = GoRouter(
+final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => HomePage(),
+      builder: (context, state) => const HomePage(),
     ),
     GoRoute(
-      path: '/newTask',
+      path: '/newtask',
       builder: (context, state) => CreateTaskPage(),
+    ),
+    GoRoute(
+      path: '/updatetask',
+      builder: (context, state) {
+        final args = state.extra as Map<String, dynamic>;
+        return UpdateTaskPage(
+          taskIndex: args['taskIndex'],
+          task: args['task'],
+        );
+      },
     ),
   ],
 );
-

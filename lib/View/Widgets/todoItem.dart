@@ -11,7 +11,6 @@ class ToDoItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: GestureDetector(
-        onTap: () => viewModel.onTaskTap(context),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

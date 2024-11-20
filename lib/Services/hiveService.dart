@@ -1,12 +1,30 @@
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:day_plan_diary/Models/task.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HiveService {
   static late Box<Task> taskBox;
-  static late Box<dynamic> testBox;
 
   static Future<void> initializeHive() async {
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(TaskAdapter());  // Register adapter only if not already registered
+    }
     taskBox = await Hive.openBox<Task>('tasksBox');
-    testBox = await Hive.openBox('testBox');
+  }
+
+  Future<void> addTask(Task task) async {
+    await taskBox.add(task);
+  }
+
+  Future<void> deleteTask(int index) async {
+    await taskBox.deleteAt(index);
+    print('delete index is $index');
+  }
+
+  List<Task> getAllTasks() {
+    return taskBox.values.toList();
+  }
+  Future<void> updateTask(int index, Task updatedTask) async {
+    await taskBox.putAt(index, updatedTask);
   }
 }
+
