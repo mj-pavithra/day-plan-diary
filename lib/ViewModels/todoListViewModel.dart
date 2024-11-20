@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../Models/task.dart';
-import '../Utils/snackbar_utils.dart';
+import '../Utils/snackbar.dart';
 
 class TodoListViewModel extends ChangeNotifier {
   final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
@@ -30,6 +30,10 @@ class TodoListViewModel extends ChangeNotifier {
 
   void setTodoSelection(bool isTodo) {
     isTodoSelected = isTodo;
+    notifyListeners();
+  }
+  Future<void> updateTask(int index, Task updatedTask) async {
+    await _taskBox.putAt(index, updatedTask);
     notifyListeners();
   }
 }

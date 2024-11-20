@@ -8,7 +8,7 @@ class Task {
     required this.title,
     required this.date,
     required this.priority,
-    required this.isCompleted,
+    this.isCompleted = false,
   });
 
   @HiveField(0)
@@ -21,7 +21,6 @@ class Task {
   String priority;
 
   @HiveField(3)
-
   bool isCompleted;
 
   Map<String, dynamic> toMap() {
