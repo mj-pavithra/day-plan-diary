@@ -1,7 +1,8 @@
+import 'package:day_plan_diary/view/screens/home/todoList.dart';
+import 'package:day_plan_diary/viewmodels/todoBodyViewModel.dart';
+import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:day_plan_diary/ViewModels/todoBodyViewModel.dart';
-import 'package:day_plan_diary/View/Widgets/todoList.dart';
 
 class ToDoBody extends StatelessWidget {
   const ToDoBody({super.key});
@@ -9,11 +10,11 @@ class ToDoBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<TodoBodyViewModel>(context);
+    final todoListViewModel = Provider.of<TodoListViewModel>(context);
 
     return Container(
       color: Colors.white,
       child: SizedBox(
-        
         height: 630,
         child: Column(
           children: [
@@ -40,7 +41,7 @@ class ToDoBody extends StatelessWidget {
                         value: viewModel.selectedPriority,
                         onChanged: (String? newValue) {
                           if (newValue != null) {
-                            viewModel.updatePriority(newValue);
+                            todoListViewModel.setSelectedPriority(newValue); // Update priority
                           }
                         },
                         items: <String>['All', 'High', 'Medium', 'Low']
@@ -65,7 +66,7 @@ class ToDoBody extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   TextButton(
-                    onPressed: () => viewModel.toggleTodoSelection(true),
+                    onPressed: () => todoListViewModel.setTodoSelection(true),
                     child: Text(
                       'TODO',
                       style: TextStyle(
@@ -78,17 +79,22 @@ class ToDoBody extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () => viewModel.toggleTodoSelection(false),
-                    child: Text(
-                      'COMPLETED',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: viewModel.isTodoSelected
-                            ? Colors.grey
-                            : const Color.fromARGB(206, 87, 39, 176),
-                      ),
-                    ),
+                    onPressed: viewModel.isTodoSelected
+                            ? () {
+                                todoListViewModel.setTodoSelection(false);
+                                print('COMPLETED');
+                              }
+                            : null, // Disables the button if the condition is not met
+                        child: Text(
+                          'COMPLETED',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: !viewModel.isTodoSelected
+                                ? const Color.fromARGB(206, 87, 39, 176)
+                                : Colors.grey,
+                          ),
+                        ),
                   ),
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'base_viewmodel.dart';
 
-class HomePageViewModel extends ChangeNotifier { //wrap inside Base view model
+class HomePageViewModel extends BaseViewModel { //wrap inside Base view model
   String userName = "Manoj";
   String userGreeting = "Good Morning";
 

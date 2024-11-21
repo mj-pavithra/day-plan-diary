@@ -1,25 +1,49 @@
-import 'package:day_plan_diary/Models/task.dart';
-import 'package:day_plan_diary/Services/hiveService.dart';
-import 'package:day_plan_diary/Utils/snackbar.dart';
+import 'package:day_plan_diary/data/models/task.dart';
+import 'package:day_plan_diary/services/hiveService.dart';
+import 'package:day_plan_diary/utils/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class TodoItemViewModel extends ChangeNotifier {
-  final String title;
-  final String date;
-  final String priority;
-  final bool isCompleted;
+import 'base_viewmodel.dart';
 
-  TodoItemViewModel({
-    required this.title,
-    required this.date,
-    required this.priority,
-    required this.isCompleted,
-  });
+class TodoItemViewModel extends BaseViewModel {
+
+Task? task;
+late TextEditingController titleController;
+  late TextEditingController dateController;
+  String selectedPriority = "Medium"; // Default priority
+  bool isCompleted = false;
+
+  
+    void initialize(Task task) {
+    titleController = TextEditingController(text: task.title);
+    dateController = TextEditingController(text: task.date);
+    selectedPriority = task.priority ?? "Medium";
+    isCompleted = task.isCompleted ?? false;
+  }
+
+    void setPriority(String priority) {
+    selectedPriority = priority;
+    notifyListeners();
+  }
+
+  void setCompletion(bool completed) {
+    isCompleted = completed;
+    notifyListeners();
+  }
+
+  Task getUpdatedTask() {
+    return Task(
+      title: titleController.text,
+      date: dateController.text,
+      priority: selectedPriority,
+      isCompleted: isCompleted,
+    );
+  }
 
   // Determines the color based on priority
   Color get priorityColor {
-    switch (priority) {
+    switch (task?.priority) {
       case 'High':
         return const Color.fromARGB(255, 241, 2, 2);
       case 'Medium':
@@ -30,25 +54,15 @@ class TodoItemViewModel extends ChangeNotifier {
   }
 
   // Handles task tapping - navigates to update task screen
- Future<void> updateTask(BuildContext context, taskId, title, date, priority, isCompleted) async {
-    Task task  = Task(
-      title: title,
-      date: date,
-      priority: priority,
-      isCompleted: isCompleted,
-    );
-    //validate and update task
+ Future<void> updateTask(BuildContext context, taskId, tasktoUpdate) async {
 
+  print('updateTask in View model is called');
+    final task = tasktoUpdate;
     final hiveService = HiveService();
     try
     {
       await hiveService.updateTask(taskId, task);
       notifyListeners();
-      GoRouter.of(context).go('/');
-      SnackbarUtils.showSnackbar(
-        "Task updated successfully",
-        backgroundColor: Colors.green,
-      );
     }
     catch(e)
     {
@@ -111,10 +125,6 @@ class TodoItemViewModel extends ChangeNotifier {
       );
     } catch (e) {
       throw Exception('Error deleting task: $e');
-      SnackbarUtils.showSnackbar(
-        "Error deleting task",
-        backgroundColor: Colors.red,
-      );
     }
   }
     // Confirms task deletion - displays a confirmation dialog

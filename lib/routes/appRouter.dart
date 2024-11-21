@@ -1,9 +1,14 @@
 import 'package:go_router/go_router.dart';
-import '../View/home.dart';
-import '../View/newtask.dart';
-import '../View/updatetask.dart';
+import 'package:flutter/material.dart';
+
+import '../view/screens/home/home.dart';
+import '../view/screens/newtask.dart';
+import '../view/screens/updatetask.dart';
+
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
 final appRouter = GoRouter(
+  navigatorKey: _navigatorKey, // This ensures the key is used only once
   routes: [
     GoRoute(
       path: '/',
@@ -16,7 +21,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/updatetask',
       builder: (context, state) {
-        final args = state.extra as Map<String, dynamic>;
+        final args = state.extra as Map<String, dynamic>? ?? {};
         return UpdateTaskPage(
           taskIndex: args['taskIndex'],
           task: args['task'],

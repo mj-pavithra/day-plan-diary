@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../Models/task.dart';
-import '../Utils/snackbar.dart';
 
-class TodoListViewModel extends ChangeNotifier {
+import '../data/models/task.dart';
+import '../utils/snackbar.dart';
+import 'base_viewmodel.dart';
+
+class TodoListViewModel extends BaseViewModel {
   final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
   String selectedPriority = 'All';
   bool isTodoSelected = true;
 
-  List<Task> get filteredTasks {
-    return _taskBox.values.where((task) {
-      if (selectedPriority == 'All') {
-        return task.isCompleted == !isTodoSelected;
-      }
-      return task.isCompleted == !isTodoSelected && task.priority == selectedPriority;
-    }).toList();
-  }
+List<Task> get filteredTasks {
+  final bool filterByCompletion = !isTodoSelected;
+  
+  return _taskBox.values.where((task) {
+    // Ensure task fields are valid
+    final bool matchesCompletion = task.isCompleted == filterByCompletion;
+    final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
+
+    // Filter tasks based on conditions
+    return matchesCompletion && matchesPriority;
+  }).toList();
+}
+
 
   void deleteTask(BuildContext context, dynamic taskKey) {
     _taskBox.delete(taskKey);
@@ -24,14 +31,17 @@ class TodoListViewModel extends ChangeNotifier {
   }
 
   void setSelectedPriority(String priority) {
+    print('Priority set to: $priority');
     selectedPriority = priority;
     notifyListeners();
   }
 
   void setTodoSelection(bool isTodo) {
+    print('Todo selection set to: $isTodo');
     isTodoSelected = isTodo;
     notifyListeners();
   }
+
   Future<void> updateTask(int index, Task updatedTask) async {
     await _taskBox.putAt(index, updatedTask);
     notifyListeners();

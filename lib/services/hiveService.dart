@@ -1,4 +1,4 @@
-import 'package:day_plan_diary/Models/task.dart';
+import 'package:day_plan_diary/data/models/task.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class HiveService {
