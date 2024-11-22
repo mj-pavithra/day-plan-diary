@@ -21,7 +21,11 @@ class TodoList extends StatelessWidget {
     final tasks = viewModel.filteredTasks; // Use filtered tasks based on priority
 
     if (tasks.isEmpty) {
+      viewModel.taskcount = 0;
       return const Center(child: Text('No tasks available'));
+    }
+    else {
+      viewModel.taskcount = tasks.length;
     }
 
     return SingleChildScrollView(
@@ -31,25 +35,47 @@ class TodoList extends StatelessWidget {
           final taskKey = index;
 
           // Create TodoItemViewModel for each task
-          final taskViewModel = TodoItemViewModel();
+          final taskViewModel = TodoItemViewModel(); 
           taskViewModel.task = task;
 
           return Padding(
-            padding: const EdgeInsets.all(3),
-            child: GestureDetector(
-              onHorizontalDragEnd: (details) {
-                if (isNavigating) return; // Prevent duplicate navigation
-                isNavigating = true;
-                if (details.primaryVelocity! > 0) {
-                  // Right swipe: Mark task as done
-                } else {
-                  // Left swipe: Delete task
-                  taskViewModel.confirmDelete(context, viewModel.deleteTask, taskKey);
-                }
-              },
-              child: ToDoItem(viewModel: taskViewModel , taskKey: taskKey),
-            ),
-          );
+                  padding: const EdgeInsets.all(3),
+                  child: Dismissible(
+                    key: Key(taskKey.toString()),
+                    direction: DismissDirection.horizontal,
+                    confirmDismiss: (direction) async {
+                      if (direction == DismissDirection.startToEnd) {
+                        // Right swipe: Confirm to mark as completed
+                        taskViewModel.confirmComplete(context,task, taskKey);
+                      } else if (direction == DismissDirection.endToStart) {
+                        // Left swipe: Delete without confirmation
+                        taskViewModel.confirmDelete(context, viewModel.deleteTask, taskKey);
+                        return true;
+                      }
+                      return false;
+                    },
+
+                    onDismissed: (direction) {
+                      if (direction == DismissDirection.endToStart) {
+                        viewModel.deleteTask(context, taskKey);
+                      }
+  },
+                    background: Container(
+                      color: Colors.green,
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.check, color: Colors.white),
+                    ),
+                    secondaryBackground: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    child: ToDoItem(viewModel: taskViewModel, taskKey: taskKey),
+                  ),
+                );
+
         }),
       ),
     );

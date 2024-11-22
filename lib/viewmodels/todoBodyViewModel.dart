@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+
 import 'base_viewmodel.dart';
 
-class TodoBodyViewModel extends ChangeNotifier {
+class TodoBodyViewModel extends BaseViewModel {
   String selectedPriority = 'All';
   bool isTodoSelected = true;
 

@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 import 'services/hiveService.dart';
 import 'utils/snackbar.dart';
-import 'viewmodels/HomePageViewModel.dart';
+import 'viewmodels/homePageViewModel.dart';
 import 'routes/appRouter.dart';
 
 

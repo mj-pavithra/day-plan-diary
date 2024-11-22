@@ -1,6 +1,6 @@
 import 'package:day_plan_diary/view/screens/home/todoBody.dart';
 import 'package:day_plan_diary/view/widgets/greeting.dart';
-import 'package:day_plan_diary/viewmodels/HomePageViewModel.dart';
+import 'package:day_plan_diary/viewmodels/homePageViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

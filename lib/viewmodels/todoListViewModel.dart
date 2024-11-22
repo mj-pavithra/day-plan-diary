@@ -9,6 +9,7 @@ class TodoListViewModel extends BaseViewModel {
   final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
   String selectedPriority = 'All';
   bool isTodoSelected = true;
+  int  taskcount= 0;
 
 List<Task> get filteredTasks {
   final bool filterByCompletion = !isTodoSelected;
@@ -17,7 +18,7 @@ List<Task> get filteredTasks {
     // Ensure task fields are valid
     final bool matchesCompletion = task.isCompleted == filterByCompletion;
     final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
-
+    taskcount = _taskBox.length;
     // Filter tasks based on conditions
     return matchesCompletion && matchesPriority;
   }).toList();
@@ -46,4 +47,7 @@ List<Task> get filteredTasks {
     await _taskBox.putAt(index, updatedTask);
     notifyListeners();
   }
+
+  
 }
+

@@ -2,8 +2,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 import '../view/screens/home/home.dart';
-import '../view/screens/newtask.dart';
-import '../view/screens/updatetask.dart';
+import '../view/screens/newtask/newtask.dart';
+import '../view/screens/updatetask/updatetask.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 

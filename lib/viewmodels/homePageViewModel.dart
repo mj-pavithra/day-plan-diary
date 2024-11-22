@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'base_viewmodel.dart';
 
 class HomePageViewModel extends BaseViewModel { //wrap inside Base view model

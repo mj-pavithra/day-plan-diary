@@ -3,23 +3,25 @@ import 'package:day_plan_diary/services/hiveService.dart';
 import 'package:day_plan_diary/utils/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'base_viewmodel.dart';
 
 class TodoItemViewModel extends BaseViewModel {
 
 Task? task;
-late TextEditingController titleController;
+  late TextEditingController titleController;
   late TextEditingController dateController;
-  String selectedPriority = "Medium"; // Default priority
-  bool isCompleted = false;
+  late String selectedPriority ;
+  late bool isCompleted;
+  final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
 
   
     void initialize(Task task) {
     titleController = TextEditingController(text: task.title);
     dateController = TextEditingController(text: task.date);
-    selectedPriority = task.priority ?? "Medium";
-    isCompleted = task.isCompleted ?? false;
+    selectedPriority = task.priority ;
+    isCompleted = task.isCompleted ;
   }
 
     void setPriority(String priority) {
@@ -34,6 +36,7 @@ late TextEditingController titleController;
 
   Task getUpdatedTask() {
     return Task(
+      id: task?.id?? 1,
       title: titleController.text,
       date: dateController.text,
       priority: selectedPriority,
@@ -54,26 +57,13 @@ late TextEditingController titleController;
   }
 
   // Handles task tapping - navigates to update task screen
- Future<void> updateTask(BuildContext context, taskId, tasktoUpdate) async {
 
-  print('updateTask in View model is called');
-    final task = tasktoUpdate;
-    final hiveService = HiveService();
-    try
-    {
-      await hiveService.updateTask(taskId, task);
-      notifyListeners();
-    }
-    catch(e)
-    {
-      throw Exception('Error updating task: $e');
-    }
-  }
 
 
   // Helper function to validate and save a task
   Future<void> saveTask({
     required BuildContext context,
+    required int id,
     required String title,
     required String date,
     required String priority,
@@ -90,6 +80,7 @@ late TextEditingController titleController;
     }
 
     final task = Task(
+      id: id,
       title: title,
       date: date,
       priority: priority,
@@ -156,5 +147,64 @@ late TextEditingController titleController;
       },
     );
   }
+  void confirmComplete(BuildContext context,Task task,  int key) {
+    print('confirmComplete in View model is called:- $key');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Mark as Completed"),
+          content: const Text("Are you sure you want to mark this task as completed?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                print('confirmComplete in View model is called');
+                 updateTask(  key , task.changedTask(isCompleted: true) );
+                 print('$key :- task is completed');
+                Navigator.of(context).pop();
+              },
+              child: const Text("Confirm"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  Future<void> updateTask(int index, Task updatedTask) async {
+      print('$index :- task is completed in updateTask');
+    await _taskBox.putAt(index, updatedTask);
+    notifyListeners();
+  }
+  void markAsCompleted(BuildContext context, Function updateTask, dynamic task) {
+    String taskTitle = task.title;
+    bool isCompleted = task.isCompleted;
+    print("task:- $taskTitle ;");
+    print("is completed:- $isCompleted ;");
+
+      final updatedTask = task.changedTask(isCompleted: true); // Assuming copyWith is implemented
+      updateTask(task.id, updatedTask);
+      SnackbarUtils.showSnackbar('Task marked as completed', backgroundColor: Colors.green);
+      notifyListeners();
+    }
+    // Future<void> updateTask(BuildContext context, taskId, tasktoUpdate) async {
+
+    //   print('updateTask in View model is called');
+    //     final task = tasktoUpdate;
+    //     final hiveService = HiveService();
+    //     try
+    //     {
+    //       await hiveService.updateTask(taskId, task);
+    //       notifyListeners();
+    //     }
+    //     catch(e)
+    //     {
+    //       throw Exception('Error updating task: $e');
+    //     }
+    //   }
+
 
 }

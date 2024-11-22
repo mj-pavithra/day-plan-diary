@@ -1,3 +1,4 @@
+import 'package:day_plan_diary/helpers/dateFormatter.dart';
 import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -11,7 +12,8 @@ class ToDoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
+    print('Widget key:- $key');
+    print('Task key:- $taskKey');
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: GestureDetector(
@@ -29,18 +31,19 @@ class ToDoItem extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(viewModel.task!.date),
+                  Text(formatDate(viewModel.task!.date),
+                      style: const TextStyle(color: Colors.grey)),
                   const SizedBox(width: 10),
                   Icon(Icons.check_circle, color: viewModel.priorityColor),
                   const SizedBox(width: 6),
                   Text(
                     viewModel.task!.priority,
-                    style: const TextStyle(color: Colors.blueAccent),
+                    style: const TextStyle(color: Colors.grey),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.edit_note),
-                    color: Colors.blue,
+                    color: const Color.fromARGB(255, 0, 0, 0),
                     tooltip: 'Edit Task',
                     onPressed: () {
                       print('Edit task button pressed');

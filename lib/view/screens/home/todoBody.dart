@@ -73,8 +73,8 @@ class ToDoBody extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: viewModel.isTodoSelected
-                            ? const Color.fromARGB(206, 87, 39, 176)
-                            : Colors.grey,
+                                ?  Colors.grey
+                                : const Color.fromARGB(206, 87, 39, 176),
                       ),
                     ),
                   ),
@@ -91,8 +91,8 @@ class ToDoBody extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: !viewModel.isTodoSelected
-                                ? const Color.fromARGB(206, 87, 39, 176)
-                                : Colors.grey,
+                                ?  Colors.grey
+                                : const Color.fromARGB(206, 87, 39, 176),
                           ),
                         ),
                   ),

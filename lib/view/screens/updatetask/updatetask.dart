@@ -98,7 +98,6 @@ class UpdateTaskPage extends StatelessWidget {
                       try {
                         print('Updating task...');
                         await viewModel.updateTask(
-                          context,
                           taskIndex,
                           viewModel.task!,
                         );
