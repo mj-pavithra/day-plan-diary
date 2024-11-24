@@ -36,11 +36,6 @@ class _LoginViewState extends State<LoginView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Login",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
                 "Please log in to your account and start the adventure",
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
@@ -75,33 +70,50 @@ class _LoginViewState extends State<LoginView> {
                   });
                 },
               ),
-              const SizedBox(height: 24),
+            const Spacer(),
+              const Center(child: SizedBox(height: 24)),
               authViewModel.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          await authViewModel.login(
-                            _emailController.text.trim(),
-                            _passwordController.text.trim(),
-                          );
-                          GoRouter.of(context).go('/home');
-                        }
-                      },
-                      child: const Text("Login"),
-                    ),
+                  : Center(
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            await authViewModel.login(
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                            );
+                            GoRouter.of(context).go('/home');
+                          }
+                        },style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(300, 50),
+                          backgroundColor: const Color.fromARGB(206, 87, 39, 176),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text("Login",
+                                    style: TextStyle(fontSize: 20, color: Colors.white),),
+                      ),
+                  ),
               const SizedBox(height: 16),
               Center(
                 child: Column(
                   children: [
                     const Text("Don't you have an account?", style: TextStyle(fontSize: 14)),
-                    TextButton(
+                    const SizedBox(height: 8),
+                    ElevatedButton(
                       onPressed: () {
                         GoRouter.of(context).go('/register');
-                      },
+                      },style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(300, 50),
+                        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       child: const Text(
                         "Register",
-                        style: TextStyle(color: Colors.purple),
+                        style: TextStyle(fontSize: 20, color: Color.fromARGB(206, 87, 39, 176)),
                       ),
                     ),
                   ],

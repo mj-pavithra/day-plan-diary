@@ -10,7 +10,7 @@ class CustomTextField extends StatelessWidget {
   final VoidCallback? togglePasswordVisibility;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.labelText,
     required this.isPassword,
     required this.controller,
@@ -18,7 +18,7 @@ class CustomTextField extends StatelessWidget {
     this.onFieldSubmitted,
     this.obscureText = false,
     this.togglePasswordVisibility,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +29,7 @@ class CustomTextField extends StatelessWidget {
       onFieldSubmitted: onFieldSubmitted,
       decoration: InputDecoration(
         labelText: labelText,
+        border: const OutlineInputBorder(), // Add border for styling consistency
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
@@ -37,5 +38,6 @@ class CustomTextField extends StatelessWidget {
             : null,
       ),
     );
+
   }
 }

@@ -83,42 +83,60 @@ class _RegisterViewState extends State<RegisterView> {
                   });
                 },
               ),
-              const SizedBox(height: 24),
+              const Spacer(),
+
               authViewModel.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          try {
-                            await authViewModel.register(
-                              _emailController.text.trim(),
-                              _passwordController.text.trim(),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Registration successful')),
-                            );
-                            GoRouter.of(context).go('/');
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(e.toString())),
-                            );
+                  : Center(
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            try {
+                              await authViewModel.register(
+                                _emailController.text.trim(),
+                                _passwordController.text.trim(),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Registration successful')),
+                              );
+                              GoRouter.of(context).go('/');
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            }
                           }
-                        }
-                      },
-                      child: const Text("Register"),
-                    ),
+                        },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(300, 50),
+                          backgroundColor: const Color.fromARGB(206, 87, 39, 176),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text("Register",style: TextStyle(fontSize: 20, color: Colors.white),),
+                        
+                      ),
+                  ),
               const SizedBox(height: 16),
               Center(
                 child: Column(
                   children: [
                     const Text("Already have an account?", style: TextStyle(fontSize: 14)),
-                    TextButton(
+                    const SizedBox(height: 8),
+                    ElevatedButton(
                       onPressed: () {
                         GoRouter.of(context).go('/');
-                      },
+                      },style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(300, 50),
+                        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       child: const Text(
                         "Login",
-                        style: TextStyle(color: Colors.purple),
+                        style: TextStyle(fontSize: 20, color: Color.fromARGB(206, 87, 39, 176)),
                       ),
                     ),
                   ],
