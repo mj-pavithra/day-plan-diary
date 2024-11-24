@@ -12,7 +12,7 @@ class TodoItemViewModel extends BaseViewModel {
 Task? task;
   late TextEditingController titleController;
   late TextEditingController dateController;
-  late String selectedPriority ;
+  String selectedPriority = 'All';
   late bool isCompleted;
   final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
 
@@ -33,10 +33,14 @@ Task? task;
     isCompleted = completed;
     notifyListeners();
   }
+  void updatePriority(String newPriority) {
+    selectedPriority = newPriority;
+  }
+
 
   Task getUpdatedTask() {
     return Task(
-      id: task?.id?? 1,
+      id: task?.id ?? 0,
       title: titleController.text,
       date: dateController.text,
       priority: selectedPriority,
@@ -91,7 +95,7 @@ Task? task;
       final hiveService = HiveService();
       await hiveService.addTask(task);
       notifyListeners();
-      GoRouter.of(context).go('/');
+      GoRouter.of(context).go('/home');
       SnackbarUtils.showSnackbar(
         "New task added successfully",
         backgroundColor: Colors.green,
@@ -104,7 +108,6 @@ Task? task;
 
   // Delete task via HiveService
   Future<void> deleteTask(int taskKey) async {
-    print('deleteTask in View model is called');
 
     try {
       final hiveService = HiveService();
@@ -119,10 +122,11 @@ Task? task;
     }
   }
     // Confirms task deletion - displays a confirmation dialog
-  void confirmDelete(
-      BuildContext context, Function(BuildContext, dynamic) deleteTaskCallback, dynamic taskKey) {
-                          print(taskKey);
-    showDialog(
+  Future <bool> confirmDelete (
+      BuildContext context,  dynamic taskKey) async{
+    
+    return await showDialog <bool>(
+
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -130,25 +134,24 @@ Task? task;
           content: const Text("Are you sure you want to delete this task?"),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.pop(context, false),
               child: const Text("Cancel"),
             ),
             TextButton(
-              onPressed: () {
-                deleteTask(taskKey);
-                deleteTaskCallback(context, taskKey);
-                Navigator.of(context).pop();
-                          print('delete debuging 3');
+              onPressed: ()  {
+                Navigator.pop(context, true);
+              deleteTask(taskKey);
               },
+
               child: const Text("Delete"),
             ),
           ],
         );
+
       },
-    );
+    )?? false;
   }
   void confirmComplete(BuildContext context,Task task,  int key) {
-    print('confirmComplete in View model is called:- $key');
     showDialog(
       context: context,
       builder: (context) {
@@ -162,9 +165,7 @@ Task? task;
             ),
             TextButton(
               onPressed: () {
-                print('confirmComplete in View model is called');
                  updateTask(  key , task.changedTask(isCompleted: true) );
-                 print('$key :- task is completed');
                 Navigator.of(context).pop();
               },
               child: const Text("Confirm"),
@@ -175,15 +176,12 @@ Task? task;
     );
   }
   Future<void> updateTask(int index, Task updatedTask) async {
-      print('$index :- task is completed in updateTask');
     await _taskBox.putAt(index, updatedTask);
     notifyListeners();
   }
   void markAsCompleted(BuildContext context, Function updateTask, dynamic task) {
     String taskTitle = task.title;
     bool isCompleted = task.isCompleted;
-    print("task:- $taskTitle ;");
-    print("is completed:- $isCompleted ;");
 
       final updatedTask = task.changedTask(isCompleted: true); // Assuming copyWith is implemented
       updateTask(task.id, updatedTask);

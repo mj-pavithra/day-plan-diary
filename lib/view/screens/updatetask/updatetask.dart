@@ -96,7 +96,6 @@ class UpdateTaskPage extends StatelessWidget {
                     onPressed: () async {
                       // Ensure navigation and updates are performed sequentially
                       try {
-                        print('Updating task...');
                         await viewModel.updateTask(
                           taskIndex,
                           viewModel.task!,

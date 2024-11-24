@@ -1,5 +1,5 @@
 import 'package:day_plan_diary/view/screens/home/todoList.dart';
-import 'package:day_plan_diary/viewmodels/todoBodyViewModel.dart';
+import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
 import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,7 +9,7 @@ class ToDoBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<TodoBodyViewModel>(context);
+    final viewModel = Provider.of<TodoItemViewModel>(context);
     final todoListViewModel = Provider.of<TodoListViewModel>(context);
 
     return Container(
@@ -36,25 +36,26 @@ class ToDoBody extends StatelessWidget {
                         border: Border.all(color: Colors.grey),
                       ),
                       alignment: Alignment.center,
-                      child: DropdownButton<String>(
-                        borderRadius: BorderRadius.circular(10),
-                        value: viewModel.selectedPriority,
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            todoListViewModel.setSelectedPriority(newValue); // Update priority
-                          }
-                        },
-                        items: <String>['All', 'High', 'Medium', 'Low']
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(
-                              value,
-                              style: const TextStyle(color: Color.fromARGB(146, 0, 0, 0)),
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                      child:DropdownButton<String>(
+                            borderRadius: BorderRadius.circular(10),
+                            value: todoListViewModel.selectedPriority, // Get values from model
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                todoListViewModel.setSelectedPriority(newValue); // Update priority
+                              }
+                            },
+                            items: <String>['All', 'High', 'Medium', 'Low']
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  style: const TextStyle(color: Color.fromARGB(146, 0, 0, 0)),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+
                     ),
                   ),
                 ],
@@ -72,17 +73,16 @@ class ToDoBody extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: viewModel.isTodoSelected
-                                ?  Colors.grey
-                                : const Color.fromARGB(206, 87, 39, 176),
+                        color: todoListViewModel.isTodoSelected
+                                ?  const Color.fromARGB(206, 87, 39, 176)
+                                : Colors.grey,
                       ),
                     ),
                   ),
                   TextButton(
-                    onPressed: viewModel.isTodoSelected
+                    onPressed: todoListViewModel.isTodoSelected
                             ? () {
                                 todoListViewModel.setTodoSelection(false);
-                                print('COMPLETED');
                               }
                             : null, // Disables the button if the condition is not met
                         child: Text(
@@ -90,9 +90,9 @@ class ToDoBody extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: !viewModel.isTodoSelected
-                                ?  Colors.grey
-                                : const Color.fromARGB(206, 87, 39, 176),
+                            color: !todoListViewModel.isTodoSelected
+                                ?  const Color.fromARGB(206, 87, 39, 176)
+                                : Colors.grey,
                           ),
                         ),
                   ),
@@ -101,7 +101,7 @@ class ToDoBody extends StatelessWidget {
             ),
             Expanded(
               child: TodoList(
-                isTodoSelected: viewModel.isTodoSelected,
+                isTodoSelected: todoListViewModel.isTodoSelected,
                 selectedPriority: viewModel.selectedPriority,
               ),
             ),

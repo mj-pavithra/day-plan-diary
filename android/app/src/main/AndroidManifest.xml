@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="com.wisesoftlab.dpd">
     <application
         android:label="day_plan_diary"
         android:name="${applicationName}"

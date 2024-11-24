@@ -11,11 +11,17 @@ class TodoListViewModel extends BaseViewModel {
   bool isTodoSelected = true;
   int  taskcount= 0;
 
+  void toggleTodoSelection(bool isTodo) {
+    isTodoSelected = isTodo;
+    notifyListeners();
+  }
+  
+
 List<Task> get filteredTasks {
   final bool filterByCompletion = !isTodoSelected;
-  
   return _taskBox.values.where((task) {
     // Ensure task fields are valid
+    // final bool matchesVisibility = task.isVisible ?? true;
     final bool matchesCompletion = task.isCompleted == filterByCompletion;
     final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
     taskcount = _taskBox.length;
@@ -23,6 +29,14 @@ List<Task> get filteredTasks {
     return matchesCompletion && matchesPriority;
   }).toList();
 }
+void removeTask(int taskKey) {
+  // Temporarily hide the task from the UI without deleting it
+  final keys = _taskBox.keys.toList();
+  if (taskKey < keys.length) {
+    notifyListeners(); // Notify listeners to refresh UI
+  }
+}
+
 
 
   void deleteTask(BuildContext context, dynamic taskKey) {
@@ -32,19 +46,19 @@ List<Task> get filteredTasks {
   }
 
   void setSelectedPriority(String priority) {
-    print('Priority set to: $priority');
     selectedPriority = priority;
     notifyListeners();
   }
 
   void setTodoSelection(bool isTodo) {
-    print('Todo selection set to: $isTodo');
     isTodoSelected = isTodo;
+    toggleTodoSelection(isTodoSelected);
     notifyListeners();
   }
 
   Future<void> updateTask(int index, Task updatedTask) async {
     await _taskBox.putAt(index, updatedTask);
+
     notifyListeners();
   }
 

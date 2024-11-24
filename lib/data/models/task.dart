@@ -10,6 +10,7 @@ class Task {
     required this.date,
     required this.priority,
     this.isCompleted = false,
+    this.isVisible = true,
   });
   @HiveField(0)
   int id;
@@ -26,12 +27,17 @@ class Task {
   @HiveField(4)
   bool isCompleted;
 
+  
+  @HiveField(5)
+  bool isVisible;
+
   Task changedTask({
     int? id,
     String? title,
     String? date,
     String? priority,
     bool? isCompleted,
+    bool? isVisible
   }) {
     return Task(
       id: id ?? this.id,
@@ -39,6 +45,7 @@ class Task {
       date: date ?? this.date,
       priority: priority ?? this.priority,
       isCompleted: isCompleted ?? this.isCompleted,
+      isVisible: isVisible?? this.isVisible
     );
   }
   
@@ -50,6 +57,7 @@ class Task {
       'date': date,
       'priority': priority,
       'isCompleted': isCompleted,
+      'isVisible': isVisible,
     };
   }
 }

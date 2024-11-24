@@ -41,40 +41,46 @@ class TodoList extends StatelessWidget {
           return Padding(
                   padding: const EdgeInsets.all(3),
                   child: Dismissible(
-                    key: Key(taskKey.toString()),
-                    direction: DismissDirection.horizontal,
-                    confirmDismiss: (direction) async {
-                      if (direction == DismissDirection.startToEnd) {
-                        // Right swipe: Confirm to mark as completed
-                        taskViewModel.confirmComplete(context,task, taskKey);
-                      } else if (direction == DismissDirection.endToStart) {
-                        // Left swipe: Delete without confirmation
-                        taskViewModel.confirmDelete(context, viewModel.deleteTask, taskKey);
-                        return true;
-                      }
-                      return false;
-                    },
+                          key: Key(taskKey.toString()),
+                          direction: isTodoSelected
+                              ? DismissDirection.horizontal // Allow both directions
+                              : DismissDirection.endToStart, // Only allow left swipe (delete)
+                          confirmDismiss: (direction) async {
+                            if (direction == DismissDirection.startToEnd) {
+                              // Right swipe: Confirm to mark as completed
+                              taskViewModel.confirmComplete(context, task, taskKey);
+                              return false; // Prevent dismissal
+                            } else if (direction == DismissDirection.endToStart) {
+                              final confirmDelete = await taskViewModel.confirmDelete(context, taskKey);
+                              if (confirmDelete) {
+                                viewModel.deleteTask(context, taskKey);
+                              }
+                              return false; // Allow dismissal
+                            }
+                            return false;
+                          }, 
+                          // onDismissed: (direction) {
+                          //   if (direction == DismissDirection.endToStart) {
+                          //     viewModel.removeTask(taskKey); // Direct removal method
+                          //   }
+                          // },
+                          background: Container(
+                            color: Colors.green,
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: const Icon(Icons.check, color: Colors.white),
+                          ),
+                          secondaryBackground: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: const Icon(Icons.delete, color: Colors.white),
+                          ),
+                          child: ToDoItem(viewModel: taskViewModel, taskKey: taskKey),
+                        ),
 
-                    onDismissed: (direction) {
-                      if (direction == DismissDirection.endToStart) {
-                        viewModel.deleteTask(context, taskKey);
-                      }
-  },
-                    background: Container(
-                      color: Colors.green,
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Icon(Icons.check, color: Colors.white),
-                    ),
-                    secondaryBackground: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    child: ToDoItem(viewModel: taskViewModel, taskKey: taskKey),
-                  ),
                 );
+
 
         }),
       ),

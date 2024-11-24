@@ -17,7 +17,6 @@ class HiveService {
 
   Future<void> deleteTask(int index) async {
     await taskBox.deleteAt(index);
-    print('delete index is $index');
   }
 
   List<Task> getAllTasks() {

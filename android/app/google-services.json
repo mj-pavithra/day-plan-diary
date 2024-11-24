@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205897039737",
+    "project_id": "day-plan-diary",
+    "storage_bucket": "day-plan-diary.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205897039737:android:100baf12e2f90d149db9a8",
+        "android_client_info": {
+          "package_name": "com.wisesoftlab.dpd"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB01bu2Km94Ss6su9UCkTc6abjWWIDCUjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

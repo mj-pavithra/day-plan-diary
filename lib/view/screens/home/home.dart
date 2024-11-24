@@ -13,6 +13,7 @@ class HomePage extends StatelessWidget {
     final viewModel = Provider.of<HomePageViewModel>(context);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar( 
         backgroundColor: Colors.white,
         elevation: 0,
