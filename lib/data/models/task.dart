@@ -31,7 +31,10 @@ class Task {
   @HiveField(5)
   bool isVisible;
 
+  
+
   Task changedTask({
+    required Task CurrentTask,
     int? id,
     String? title,
     String? date,
@@ -39,13 +42,14 @@ class Task {
     bool? isCompleted,
     bool? isVisible
   }) {
+    print("change task is called: $id, $title, $date, $priority, $isCompleted, $isVisible");
     return Task(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      date: date ?? this.date,
-      priority: priority ?? this.priority,
-      isCompleted: isCompleted ?? this.isCompleted,
-      isVisible: isVisible?? this.isVisible
+      id: id ?? CurrentTask.id,
+      title: title ?? CurrentTask.title,
+      date: date ?? CurrentTask.date,
+      priority: priority ?? CurrentTask.priority,
+      isCompleted: isCompleted ?? CurrentTask.isCompleted,
+      isVisible: isVisible?? CurrentTask.isVisible
     );
   }
   

@@ -7,12 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class UpdateTaskPage extends StatelessWidget {
-  final int taskIndex;
   final Task task;
 
   const UpdateTaskPage({
     super.key,
-    required this.taskIndex,
     required this.task,
   });
 
@@ -30,7 +28,7 @@ class UpdateTaskPage extends StatelessWidget {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              context.go('/');
+              context.go('/home');
             },
           ),
         ),
@@ -62,7 +60,7 @@ class UpdateTaskPage extends StatelessWidget {
                           DateTime? pickedDate = await showDatePicker(
                             context: context,
                             initialDate: DateTime.now(),
-                            firstDate: DateTime(2000),
+                            firstDate: DateTime.now(),
                             lastDate: DateTime(2100),
                           );
                           if (pickedDate != null) {
@@ -97,17 +95,17 @@ class UpdateTaskPage extends StatelessWidget {
                       // Ensure navigation and updates are performed sequentially
                       try {
                         await viewModel.updateTask(
-                          taskIndex,
                           viewModel.task!,
                         );
-                        GoRouter.of(context).go('/');
+                        GoRouter.of(context).go('/home');
                         SnackbarUtils.showSnackbar(
                           uSuccessMessage,
                           backgroundColor: Colors.green,
                         );
                         // Pop only once the task is updated
                         if (context.mounted) {
-                          context.go('/');
+                          
+                          context.go('/home');
                         }
                       } catch (e) {
                         SnackbarUtils.showSnackbar(

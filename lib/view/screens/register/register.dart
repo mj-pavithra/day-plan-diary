@@ -1,6 +1,8 @@
+import 'package:day_plan_diary/utils/snackbar.dart';
 import 'package:day_plan_diary/utils/validators.dart';
 import 'package:day_plan_diary/view/widgets/custom_text_field.dart';
 import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
+import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -36,11 +38,6 @@ class _RegisterViewState extends State<RegisterView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Register",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
               const Text(
                 "Create an account to start your adventure",
                 style: TextStyle(fontSize: 16, color: Colors.grey),
@@ -85,7 +82,7 @@ class _RegisterViewState extends State<RegisterView> {
               ),
               const Spacer(),
 
-              authViewModel.isLoading
+              ViewState == ViewState.Loading
                   ? const Center(child: CircularProgressIndicator())
                   : Center(
                     child: ElevatedButton(
@@ -101,8 +98,7 @@ class _RegisterViewState extends State<RegisterView> {
                               );
                               GoRouter.of(context).go('/');
                             } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(e.toString())),
+                              SnackbarUtils.showSnackbar(e.toString(), backgroundColor: Colors.red  
                               );
                             }
                           }

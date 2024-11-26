@@ -1,40 +1,47 @@
-import 'package:flutter/material.dart';
 import '../data/repositories/auth_repository.dart';
+import '../data/repositories/user_repository.dart';
+import 'base_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Add this line to import User type from firebase
 
-class AuthViewModel extends ChangeNotifier {
+class AuthViewModel extends BaseViewModel {
   final AuthRepository _authRepository = AuthRepository();
+    
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
-
-  void setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
+  // Stream for auth state changes
+  Stream<User?> get authStateChanges => _authRepository.authStateChanges;
 
   Future<bool> checkIfAccountExists(String email) async {
-    setLoading(true);
+    setState(ViewState.Loading);
     try {
       return await _authRepository.doesAccountExist(email);
     } finally {
-      setLoading(false);
-    }
+      setState(ViewState.Idle);
+    } 
   }
 
   Future<void> login(String email, String password) async {
-    setLoading(true);
+    setLoading();
+
     try {
       await _authRepository.login(email, password);
     } finally {
-      setLoading(false);
+      setState(ViewState.Idle);
     }
   }
   Future<void> register(String email, String password) async {
-    setLoading(true);
+    setState(ViewState.Loading);
     try {
       await _authRepository.register(email, password);
     } finally {
-      setLoading(false);
+      setState(ViewState.Idle);
+    }
+  }
+  Future<void> logout() async {
+    setState(ViewState.Loading);
+    try {
+      await _authRepository.logout();
+    } finally {
+      setState(ViewState.Idle);
     }
   }
 

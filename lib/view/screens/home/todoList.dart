@@ -1,3 +1,4 @@
+import 'package:day_plan_diary/services/hiveService.dart';
 import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
 import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class TodoList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isNavigating = false;
+    // bool isNavigating = false;
     final viewModel = Provider.of<TodoListViewModel>(context);
     final tasks = viewModel.filteredTasks; // Use filtered tasks based on priority
 
@@ -32,7 +33,7 @@ class TodoList extends StatelessWidget {
       child: Column(
         children: List.generate(tasks.length, (index) {
           final task = tasks[index];
-          final taskKey = index;
+          final taskKey = HiveService().getTaskKey(task); // Get task key
 
           // Create TodoItemViewModel for each task
           final taskViewModel = TodoItemViewModel(); 
@@ -48,7 +49,7 @@ class TodoList extends StatelessWidget {
                           confirmDismiss: (direction) async {
                             if (direction == DismissDirection.startToEnd) {
                               // Right swipe: Confirm to mark as completed
-                              taskViewModel.confirmComplete(context, task, taskKey);
+                              taskViewModel.confirmComplete(context, task);
                               return false; // Prevent dismissal
                             } else if (direction == DismissDirection.endToStart) {
                               final confirmDelete = await taskViewModel.confirmDelete(context, taskKey);
@@ -59,11 +60,6 @@ class TodoList extends StatelessWidget {
                             }
                             return false;
                           }, 
-                          // onDismissed: (direction) {
-                          //   if (direction == DismissDirection.endToStart) {
-                          //     viewModel.removeTask(taskKey); // Direct removal method
-                          //   }
-                          // },
                           background: Container(
                             color: Colors.green,
                             alignment: Alignment.centerLeft,

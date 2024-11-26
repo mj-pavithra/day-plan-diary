@@ -16,13 +16,13 @@ class ToDoItem extends StatelessWidget {
 
     final todoListViewModel = TodoListViewModel();
     bool isTodoSelected = todoListViewModel.isTodoSelected;
-
+    final testText = viewModel.task!.title.toString();
     return Card(
       color: Colors.white,
       elevation: 5,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: GestureDetector(
-        // onTap: () => viewModel.onTaskTap(context),
+        // onTap: () => ,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -52,13 +52,14 @@ class ToDoItem extends StatelessWidget {
                       color: const Color.fromARGB(255, 0, 0, 0),
                       tooltip: 'Edit Task',
                       onPressed: () {
+                        print('You tappes on ,Itile:-  $testText, index:- $taskKey');
                         GoRouter.of(context).go(
                       '/updatetask',
                       extra: {
-                        'taskIndex': taskKey,
                         'task': viewModel.task,
                       },
                     );
+
                       },
                   ):const Spacer(),
                 ],

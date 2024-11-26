@@ -19,10 +19,29 @@ class HiveService {
     await taskBox.deleteAt(index);
   }
 
+
+
   List<Task> getAllTasks() {
-    return taskBox.values.toList();
+    List<Task> allTasks =taskBox.values.toList();
+
+    List.generate (allTasks.length, (index) {
+      final task = allTasks[index];
+      final taskKey = getTaskKey(task);
+      print('Task key: $taskKey  Title: ${task.title} isCompleted: ${task.isCompleted}');
+      });
+    return allTasks;
   }
-  Future<void> updateTask(int index, Task updatedTask) async {
+
+  int getTaskKey(Task task) {
+    final taskIndex = taskBox.values.toList().indexOf(task);
+    if (taskIndex != -1) {
+      return taskBox.keyAt(taskIndex);
+    }
+    return 0;
+  }
+
+  Future<void> updateTask( Task updatedTask) async {
+    int index = getTaskKey(updatedTask);
     await taskBox.putAt(index, updatedTask);
   }
 }

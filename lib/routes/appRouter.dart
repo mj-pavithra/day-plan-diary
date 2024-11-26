@@ -1,28 +1,33 @@
-import 'package:go_router/go_router.dart';
+import 'package:day_plan_diary/view/screens/login/login.dart';
+import 'package:day_plan_diary/view/screens/register/register.dart';
+import 'package:day_plan_diary/view/screens/splash/splash.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../view/screens/home/home.dart';
 import '../view/screens/newtask/newtask.dart';
 import '../view/screens/updatetask/updatetask.dart';
-import 'package:day_plan_diary/view/screens/login/login.dart';
-import 'package:day_plan_diary/view/screens/register/register.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
 final appRouter = GoRouter(
   navigatorKey: _navigatorKey, // This ensures the key is used only once
   routes: [
-    GoRoute(
+  GoRoute(
       path: '/',
-      builder: (context, state) => LoginView(),
+      builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginView(),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => RegisterView(),
+      builder: (context, state) => const RegisterView(),
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) =>  HomePage(),
+      builder: (context, state) =>  const HomePage(),
     ),
     GoRoute(
       path: '/newtask',
@@ -33,7 +38,6 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final args = state.extra as Map<String, dynamic>? ?? {};
         return UpdateTaskPage(
-          taskIndex: args['taskIndex'],
           task: args['task'],
         );
       },

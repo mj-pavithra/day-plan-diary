@@ -60,10 +60,6 @@ Task? task;
     }
   }
 
-  // Handles task tapping - navigates to update task screen
-
-
-
   // Helper function to validate and save a task
   Future<void> saveTask({
     required BuildContext context,
@@ -151,7 +147,7 @@ Task? task;
       },
     )?? false;
   }
-  void confirmComplete(BuildContext context,Task task,  int key) {
+  void confirmComplete(BuildContext context,Task task) {
     showDialog(
       context: context,
       builder: (context) {
@@ -165,7 +161,10 @@ Task? task;
             ),
             TextButton(
               onPressed: () {
-                 updateTask(  key , task.changedTask(isCompleted: true) );
+                task.isCompleted = true;
+                updateTask( task  );
+                // TodoListViewModel().refreshFilteredTasks();
+                print('Completed task:- ${HiveService().getTaskKey(task)}');
                 Navigator.of(context).pop();
               },
               child: const Text("Confirm"),
@@ -175,19 +174,21 @@ Task? task;
       },
     );
   }
-  Future<void> updateTask(int index, Task updatedTask) async {
-    await _taskBox.putAt(index, updatedTask);
+  Future<void> updateTask(Task updatedTask) async {
+
+    HiveService().updateTask(updatedTask);
     notifyListeners();
   }
-  void markAsCompleted(BuildContext context, Function updateTask, dynamic task) {
-    String taskTitle = task.title;
-    bool isCompleted = task.isCompleted;
 
-      final updatedTask = task.changedTask(isCompleted: true); // Assuming copyWith is implemented
-      updateTask(task.id, updatedTask);
-      SnackbarUtils.showSnackbar('Task marked as completed', backgroundColor: Colors.green);
-      notifyListeners();
-    }
+  // void markAsCompleted(BuildContext context, Function updateTask, dynamic task) {
+  //   String taskTitle = task.title;
+  //   bool isCompleted = task.isCompleted;
+
+  //     final updatedTask = task.changedTask(isCompleted: true); // Assuming copyWith is implemented
+  //     updateTask(task.id, updatedTask);
+  //     SnackbarUtils.showSnackbar('Task marked as completed', backgroundColor: Colors.green);
+  //     notifyListeners();
+  //   }
     // Future<void> updateTask(BuildContext context, taskId, tasktoUpdate) async {
 
     //   print('updateTask in View model is called');

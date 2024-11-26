@@ -1,6 +1,8 @@
+import 'package:day_plan_diary/utils/snackbar.dart';
 import 'package:day_plan_diary/utils/validators.dart';
 import 'package:day_plan_diary/view/widgets/custom_text_field.dart';
 import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
+import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -72,17 +74,21 @@ class _LoginViewState extends State<LoginView> {
               ),
             const Spacer(),
               const Center(child: SizedBox(height: 24)),
-              authViewModel.isLoading
+              authViewModel.state  == ViewState.Loading
                   ? const Center(child: CircularProgressIndicator())
                   : Center(
                     child: ElevatedButton(
                         onPressed: () async {
+                          print("Current State is $authViewModel.state" );
                           if (_formKey.currentState!.validate()) {
-                            await authViewModel.login(
+                            try {await authViewModel.login(
                               _emailController.text.trim(),
                               _passwordController.text.trim(),
                             );
-                            GoRouter.of(context).go('/home');
+                            GoRouter.of(context).go('/home');}
+                            catch (e) {
+                            SnackbarUtils.showSnackbar( e.toString(),backgroundColor: Colors.red);
+                            }
                           }
                         },style: ElevatedButton.styleFrom(
                           minimumSize: const Size(300, 50),

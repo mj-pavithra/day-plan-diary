@@ -1,3 +1,4 @@
+import 'package:day_plan_diary/services/hiveService.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -16,19 +17,23 @@ class TodoListViewModel extends BaseViewModel {
     notifyListeners();
   }
   
+  void refreshFilteredTasks() {
+    notifyListeners();
+  }
 
+  
 List<Task> get filteredTasks {
+  HiveService().getAllTasks();
   final bool filterByCompletion = !isTodoSelected;
+
   return _taskBox.values.where((task) {
-    // Ensure task fields are valid
-    // final bool matchesVisibility = task.isVisible ?? true;
     final bool matchesCompletion = task.isCompleted == filterByCompletion;
     final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
-    taskcount = _taskBox.length;
-    // Filter tasks based on conditions
+
     return matchesCompletion && matchesPriority;
   }).toList();
 }
+
 void removeTask(int taskKey) {
   // Temporarily hide the task from the UI without deleting it
   final keys = _taskBox.keys.toList();
@@ -36,8 +41,6 @@ void removeTask(int taskKey) {
     notifyListeners(); // Notify listeners to refresh UI
   }
 }
-
-
 
   void deleteTask(BuildContext context, dynamic taskKey) {
     _taskBox.delete(taskKey);
@@ -56,11 +59,6 @@ void removeTask(int taskKey) {
     notifyListeners();
   }
 
-  Future<void> updateTask(int index, Task updatedTask) async {
-    await _taskBox.putAt(index, updatedTask);
-
-    notifyListeners();
-  }
 
   
 }
