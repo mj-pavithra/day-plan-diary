@@ -12,7 +12,12 @@
           "package_name": "com.wisesoftlab.dpd"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "205897039737-0nrqb628v6gvj4b1jkm3nvac8rqgnl55.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB01bu2Km94Ss6su9UCkTc6abjWWIDCUjg"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "205897039737-0nrqb628v6gvj4b1jkm3nvac8rqgnl55.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

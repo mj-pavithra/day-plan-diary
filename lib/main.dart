@@ -10,6 +10,7 @@ import 'services/hiveService.dart';
 import 'utils/snackbar.dart';
 import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/homePageViewModel.dart';
+import 'viewmodels/session_viewmodel.dart';
 
 
 void main() async {
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => SessionViewModel()),
         ChangeNotifierProvider(
           create: (context) => HomePageViewModel(),
         ),

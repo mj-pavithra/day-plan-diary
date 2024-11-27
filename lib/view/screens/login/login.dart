@@ -3,8 +3,11 @@ import 'package:day_plan_diary/utils/validators.dart';
 import 'package:day_plan_diary/view/widgets/custom_text_field.dart';
 import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
+import 'package:day_plan_diary/viewmodels/session_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 
 class LoginView extends StatefulWidget {
@@ -22,10 +25,41 @@ class _LoginViewState extends State<LoginView> {
   bool _isPasswordVisible = false;
   String? _emailError;
 
+  // Initialize FirebaseAuth and GoogleSignIn
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  // Future<void> _signInWithGoogle() async {
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+  //     final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+  //     final OAuthCredential credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth.accessToken,
+  //       idToken: googleAuth.idToken,
+  //     );
+
+  //     final UserCredential userCredential = await _auth.signInWithCredential(credential);
+  //     final User? user = userCredential.user;
+
+  //     if (user != null) {
+  //       // After successful login, save user session and navigate
+  //       final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
+  //       sessionViewModel.saveSession(user.email!, user.displayName ?? '');
+
+  //       GoRouter.of(context).go('/home');
+  //     }
+  //   } catch (e) {
+  //     SnackbarUtils.showSnackbar("Google Sign-In failed: ${e.toString()}", backgroundColor: Colors.red);
+  //     print("Google Sign-In failed: $e");
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     final authViewModel = Provider.of<AuthViewModel>(context);
 
+
+  final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -72,35 +106,65 @@ class _LoginViewState extends State<LoginView> {
                   });
                 },
               ),
-            const Spacer(),
-              const Center(child: SizedBox(height: 24)),
-              authViewModel.state  == ViewState.Loading
+              const Spacer(),
+              authViewModel.state == ViewState.Loading
                   ? const Center(child: CircularProgressIndicator())
                   : Center(
-                    child: ElevatedButton(
+                      child: ElevatedButton(
                         onPressed: () async {
-                          print("Current State is $authViewModel.state" );
                           if (_formKey.currentState!.validate()) {
-                            try {await authViewModel.login(
-                              _emailController.text.trim(),
-                              _passwordController.text.trim(),
-                            );
-                            GoRouter.of(context).go('/home');}
-                            catch (e) {
-                            SnackbarUtils.showSnackbar( e.toString(),backgroundColor: Colors.red);
+                            try {
+                              await authViewModel.login(
+                                context,
+                                _emailController.text.trim(),
+                                _passwordController.text.trim(),
+                              );
+                              final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
+                              sessionViewModel.saveSession(
+                                _emailController.text.trim(),
+                                _emailController.text.trim(),
+                              );
+
+                              GoRouter.of(context).go('/home');
+                            } catch (e) {
+                              SnackbarUtils.showSnackbar(e.toString(), backgroundColor: Colors.red);
                             }
                           }
-                        },style: ElevatedButton.styleFrom(
+                        },
+                        style: ElevatedButton.styleFrom(
                           minimumSize: const Size(300, 50),
                           backgroundColor: const Color.fromARGB(206, 87, 39, 176),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: const Text("Login",
-                                    style: TextStyle(fontSize: 20, color: Colors.white),),
+                        child: const Text("Login", style: TextStyle(fontSize: 20, color: Colors.white)),
                       ),
+                    ),
+              const SizedBox(height: 16),
+              // Google Sign-In Button
+              Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await authViewModel.signInWithGoogle(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    maximumSize: const Size(300, 50),
+                    minimumSize: const Size(300, 50),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: const BorderSide(color: Colors.black),
+                    ),
                   ),
+                  child:const Center(
+                    child:  Text(
+                      "Sign in with Google",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Center(
                 child: Column(
@@ -110,7 +174,8 @@ class _LoginViewState extends State<LoginView> {
                     ElevatedButton(
                       onPressed: () {
                         GoRouter.of(context).go('/register');
-                      },style: ElevatedButton.styleFrom(
+                      },
+                      style: ElevatedButton.styleFrom(
                         minimumSize: const Size(300, 50),
                         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
                         shape: RoundedRectangleBorder(

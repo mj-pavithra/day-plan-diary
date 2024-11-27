@@ -2,6 +2,7 @@ import 'package:day_plan_diary/view/screens/home/todoBody.dart';
 import 'package:day_plan_diary/view/widgets/greeting.dart';
 import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/homePageViewModel.dart';
+import 'package:day_plan_diary/viewmodels/session_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final sessionViewModel = Provider.of<SessionViewModel>(context);
     final viewModel = Provider.of<HomePageViewModel>(context);
     late final authViewModel = Provider.of<AuthViewModel>(context); 
 
@@ -58,7 +61,9 @@ class HomePage extends StatelessWidget {
           ],
           onChanged: (value) async {
             if (value == 'logout') {
-              await authViewModel.logout(); // Replace with your logout logic
+              
+              sessionViewModel.clearSession();
+              SessionViewModel().clearSession();
               GoRouter.of(context).go('/login');
             }
           },

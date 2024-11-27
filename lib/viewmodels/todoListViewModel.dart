@@ -18,6 +18,7 @@ class TodoListViewModel extends BaseViewModel {
   }
   
   void refreshFilteredTasks() {
+    print("Try to refresh");
     notifyListeners();
   }
 
@@ -34,12 +35,8 @@ List<Task> get filteredTasks {
   }).toList();
 }
 
-void removeTask(int taskKey) {
-  // Temporarily hide the task from the UI without deleting it
-  final keys = _taskBox.keys.toList();
-  if (taskKey < keys.length) {
-    notifyListeners(); // Notify listeners to refresh UI
-  }
+void refreshTaskList() {
+  notifyListeners(); // Notify listeners to refresh UI
 }
 
   void deleteTask(BuildContext context, dynamic taskKey) {

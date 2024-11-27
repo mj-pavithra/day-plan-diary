@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import './todoListViewModel.dart';
 import 'base_viewmodel.dart';
 
 class TodoItemViewModel extends BaseViewModel {
+
+  var ListViewModel = TodoListViewModel();
 
 Task? task;
   late TextEditingController titleController;

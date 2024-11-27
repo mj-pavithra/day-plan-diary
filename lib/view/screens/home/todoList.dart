@@ -36,7 +36,7 @@ class TodoList extends StatelessWidget {
           final taskKey = HiveService().getTaskKey(task); // Get task key
 
           // Create TodoItemViewModel for each task
-          final taskViewModel = TodoItemViewModel(); 
+          final taskViewModel = TodoItemViewModel();
           taskViewModel.task = task;
 
           return Padding(
@@ -50,6 +50,7 @@ class TodoList extends StatelessWidget {
                             if (direction == DismissDirection.startToEnd) {
                               // Right swipe: Confirm to mark as completed
                               taskViewModel.confirmComplete(context, task);
+                              viewModel.refreshTaskList();
                               return false; // Prevent dismissal
                             } else if (direction == DismissDirection.endToStart) {
                               final confirmDelete = await taskViewModel.confirmDelete(context, taskKey);
