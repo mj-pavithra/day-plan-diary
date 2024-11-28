@@ -1,10 +1,11 @@
 import '../../services/session_service.dart';
+import 'package:firebase_auth/firebase_auth.dart'; 
 
 class SessionRepository {
   final SessionService _sessionService = SessionService();
 
-  Future<void> saveSession(String userId, String userEmail){
-      _sessionService.saveUserSession(userId, userEmail);
+  Future<void> saveSession(User user) async {
+      _sessionService.saveUserSession(user);
       return Future.value();
       }
 
@@ -18,4 +19,5 @@ class SessionRepository {
       print("new session is created");
       return session;
     }
+  
 }

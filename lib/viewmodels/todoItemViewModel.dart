@@ -4,6 +4,7 @@ import 'package:day_plan_diary/utils/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 
 import './todoListViewModel.dart';
 import 'base_viewmodel.dart';
@@ -162,15 +163,18 @@ Task? task;
               onPressed: () => Navigator.of(context).pop(),
               child: const Text("Cancel"),
             ),
-            TextButton(
-              onPressed: () {
-                task.isCompleted = true;
-                updateTask( task  );
-                // TodoListViewModel().refreshFilteredTasks();
-                print('Completed task:- ${HiveService().getTaskKey(task)}');
-                Navigator.of(context).pop();
-              },
-              child: const Text("Confirm"),
+            Provider(
+              create: (_) => TodoItemViewModel(),
+              child: TextButton(
+                onPressed: () {
+                  task.isCompleted = true; 
+                   updateTask(task);
+                  Provider.of<TodoListViewModel>(context, listen:false).refreshFilteredTasks();
+                  print('Completed task:- ${HiveService().getTaskKey(task)}');
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Confirm"),
+              ),
             ),
           ],
         );
@@ -178,8 +182,10 @@ Task? task;
     );
   }
   Future<void> updateTask(Task updatedTask) async {
-
-    HiveService().updateTask(updatedTask);
+    int taskId = HiveService().getTaskKey(updatedTask);
+    print("Title: ${updatedTask.title} Index: $taskId updated");
+    try {await HiveService().updateTask(updatedTask);}
+    catch(e) {throw Exception('Error updating task: $e');}
     notifyListeners();
   }
 

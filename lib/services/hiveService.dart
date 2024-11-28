@@ -41,8 +41,13 @@ class HiveService {
   }
 
   Future<void> updateTask( Task updatedTask) async {
-    int index = getTaskKey(updatedTask);
-    await taskBox.putAt(index, updatedTask);
+    int taskId = getTaskKey(updatedTask);
+    try {
+      await taskBox.putAt(taskId, updatedTask);
+      print('Reach hive service');
+    } catch (e) {
+      print('Error updating task: $e');
+    }
   }
 }
 

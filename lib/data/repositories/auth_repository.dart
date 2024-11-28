@@ -18,13 +18,18 @@ class AuthRepository {
     }
   }
 
-  Future<void> login(String email, String password) async {
-    try {
-      await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-    } catch (e) {
-      rethrow;
-    }
+ Future<UserCredential> login(String email, String password) async {
+  try {
+    // Sign in with email and password
+    return await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  } catch (e) {
+    throw Exception("Login failed: ${e.toString()}");
   }
+}
+
 
    Future<void> logout() async {
     await _firebaseAuth.signOut();

@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        print('User is logged in: ${user.uid}');
+        print('User is logged in user ID: ${user.uid} email: ${user.email}');
         context.go('/home'); // Navigate to Home
       } else {
         print('No user logged in.');

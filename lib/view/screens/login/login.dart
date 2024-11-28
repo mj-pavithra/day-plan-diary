@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart'; 
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -115,16 +115,14 @@ class _LoginViewState extends State<LoginView> {
                           if (_formKey.currentState!.validate()) {
                             try {
                               await authViewModel.login(
-                                context,
-                                _emailController.text.trim(),
-                                _passwordController.text.trim(),
-                              );
+                                  context,
+                                  _emailController.text.trim(),
+                                  _passwordController.text.trim(),
+                                );
+                               User? user = _auth.currentUser;
+                               print("test layer 1");
+                                //  user.email(_emailController.text.trim());
                               final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
-                              sessionViewModel.saveSession(
-                                _emailController.text.trim(),
-                                _emailController.text.trim(),
-                              );
-
                               GoRouter.of(context).go('/home');
                             } catch (e) {
                               SnackbarUtils.showSnackbar(e.toString(), backgroundColor: Colors.red);
@@ -143,7 +141,9 @@ class _LoginViewState extends State<LoginView> {
                     ),
               const SizedBox(height: 16),
               // Google Sign-In Button
-              Center(
+              authViewModel.state == ViewState.Loading
+                  ? const Center(child: CircularProgressIndicator())
+                  :Center(
                 child: ElevatedButton(
                   onPressed: () async {
                     await authViewModel.signInWithGoogle(context);

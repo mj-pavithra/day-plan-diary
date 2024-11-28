@@ -1,8 +1,10 @@
+import 'package:day_plan_diary/services/session_service.dart';
 import 'package:day_plan_diary/view/screens/home/todoBody.dart';
 import 'package:day_plan_diary/view/widgets/greeting.dart';
 import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/homePageViewModel.dart';
 import 'package:day_plan_diary/viewmodels/session_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -10,12 +12,16 @@ import 'package:provider/provider.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
+
   @override
   Widget build(BuildContext context) {
 
+    String userName = FirebaseAuth.instance.currentUser!.displayName! ?? '';
+    String displayPhoto = FirebaseAuth.instance.currentUser!.photoURL! ?? '';
     final sessionViewModel = Provider.of<SessionViewModel>(context);
     final viewModel = Provider.of<HomePageViewModel>(context);
-    late final authViewModel = Provider.of<AuthViewModel>(context); 
+    late final authViewModel = Provider.of<AuthViewModel>(context);
+    SessionService sessionService = SessionService();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -28,7 +34,7 @@ class HomePage extends StatelessWidget {
       children: [
         const Greeting(),
         Text(
-          viewModel.userName,
+          userName,
           style: const TextStyle(
             color: Colors.black,
             fontSize: 22,
@@ -43,8 +49,8 @@ class HomePage extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          icon: const CircleAvatar(
-            backgroundImage: NetworkImage('https://avatars.githubusercontent.com/u/83787860?v=4'),
+          icon:  CircleAvatar(
+            backgroundImage: NetworkImage(displayPhoto),
             radius: 20,
           ),
           items: const [
@@ -61,6 +67,7 @@ class HomePage extends StatelessWidget {
           ],
           onChanged: (value) async {
             if (value == 'logout') {
+              FirebaseAuth.instance.signOut();
               
               sessionViewModel.clearSession();
               SessionViewModel().clearSession();
@@ -96,7 +103,9 @@ class HomePage extends StatelessWidget {
       //   ],
       // ),
             body: const ToDoBody(), 
+            
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      
       floatingActionButton: FloatingActionButton(
 
         onPressed: () => context.go('/newtask'),

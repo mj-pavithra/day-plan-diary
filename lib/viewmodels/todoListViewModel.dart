@@ -18,7 +18,7 @@ class TodoListViewModel extends BaseViewModel {
   }
   
   void refreshFilteredTasks() {
-    print("Try to refresh");
+    selectedPriority = "All";
     notifyListeners();
   }
 
