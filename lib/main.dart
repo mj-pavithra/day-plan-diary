@@ -1,5 +1,8 @@
+import 'package:day_plan_diary/services/notification_service.dart';
+import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
 import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
+import 'package:day_plan_diary/utils/network_utils.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -9,8 +12,8 @@ import 'routes/appRouter.dart';
 import 'services/hiveService.dart';
 import 'utils/snackbar.dart';
 import 'viewmodels/auth_viewmodel.dart';
-import 'viewmodels/homePageViewModel.dart';
-import 'viewmodels/session_viewmodel.dart';
+import 'package:day_plan_diary/services/fcm_service.dart';
+// import 'viewmodels/session_viewmodel.dart';
 
 
 void main() async {
@@ -18,6 +21,14 @@ void main() async {
   await Hive.initFlutter();
   await Firebase.initializeApp();
   await HiveService.initializeHive();
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  NetworkUtils.initialize();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  final fcmService = FCMService();
+  await fcmService.initializeFCM();
   runApp(const MyApp());
 }
 
@@ -29,10 +40,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SessionViewModel()),
-        ChangeNotifierProvider(
-          create: (context) => HomePageViewModel(),
-        ),
+        // ChangeNotifierProvider(create: (_) => SessionViewModel()),
         ChangeNotifierProvider(
           create: (context) => TodoListViewModel(),
         ),
@@ -43,6 +51,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AuthViewModel()
           ),
+
+        ChangeNotifierProvider(
+          create: (_) => BaseViewModel(), // Add this line
+        ),
       ],
       child: MaterialApp.router(
         scaffoldMessengerKey: SnackbarUtils.messengerKey,

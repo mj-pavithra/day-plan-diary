@@ -1,9 +1,8 @@
-import 'package:day_plan_diary/viewmodels/session_viewmodel.dart';
+import 'package:day_plan_diary/services/session_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/repositories/auth_repository.dart';
@@ -30,25 +29,30 @@ class AuthViewModel extends BaseViewModel {
 
 Future<void> login(BuildContext context, String email, String password) async {
   setLoading(); // Set loading state to show progress indicator
-
-  try {
+  
+  // try {
     // Perform login and get Firebase User
     final UserCredential userCredential = await _authRepository.login(email, password);
-    final User? user = userCredential.user;
+    final User user = userCredential.user ?? _auth.currentUser!;
+  setIdle();
+    print("test layer 3");
+    // Save session with retrieved user details
+  print('Save session for ${user.email}');
+  
+    final sessionService = await SessionService.getInstance();
+    await sessionService?.saveUserDetails(user); // 'user' is a Firebase User object
 
-    if (user != null) {
-      // Save session with retrieved user details
-      final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
-      sessionViewModel.saveSession(user);
-    } else {
-      throw Exception("User is null after login.");
-    }
-  } catch (e) {
-    SnackbarUtils.showSnackbar("Login failed: ${e.toString()}", backgroundColor: Colors.red);
-    print("Login failed: $e");
-  } finally {
-    setState(ViewState.Idle); // Reset loading state
-  }
+    print("test layer 4");
+    // Navigate to Home
+    GoRouter.of(context).go('/home');
+
+  // setLoading(); // Reset loading state
+  //   } catch (e) {
+  //   SnackbarUtils.showSnackbar("Login failed: ${e.toString()}", backgroundColor: Colors.red);
+  //   print("Login failed: $e");
+  // } finally {
+  //   setIdle(); // Reset loading state
+  // }
 }
 
 
@@ -76,14 +80,16 @@ Future<void> signInWithGoogle(BuildContext context) async {
 
       // Save session
       final SharedPreferences prefs = await SharedPreferences.getInstance();
-      final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
-      sessionViewModel.saveSession(user);
+
+      final sessionService = await SessionService.getInstance();
+      await sessionService?.saveUserDetails(user); // 'user' is a Firebase User object
 
       GoRouter.of(context).go('/home');
     }
   } catch (e) {
     SnackbarUtils.showSnackbar("Google Sign-In failed: ${e.toString()}", backgroundColor: Colors.red);
     print("Google Sign-In failed: $e");
+    setIdle();
   }
 }
 
@@ -93,7 +99,7 @@ Future<void> signInWithGoogle(BuildContext context) async {
     try {
       await _authRepository.register(email, password);
     } finally {
-      setState(ViewState.Idle);
+      setIdle();
     }
   }
   Future<void> logout(BuildContext context) async {
@@ -110,8 +116,8 @@ Future<void> signInWithGoogle(BuildContext context) async {
     await prefs.clear(); // Remove all stored data
 
     // Optionally notify SessionViewModel to reset session state
-    final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
-    sessionViewModel.clearSession(); // Clear session state
+    final sessionService = await SessionService.getInstance();
+    await sessionService?.clearUserDetails(); // 'user' is a Firebase User object
 
     print("User has logged out successfully.");
   } catch (e) {

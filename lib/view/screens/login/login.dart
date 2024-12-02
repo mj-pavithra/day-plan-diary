@@ -3,7 +3,7 @@ import 'package:day_plan_diary/utils/validators.dart';
 import 'package:day_plan_diary/view/widgets/custom_text_field.dart';
 import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
-import 'package:day_plan_diary/viewmodels/session_viewmodel.dart';
+// import 'package:day_plan_diary/viewmodels/session_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -59,7 +59,7 @@ class _LoginViewState extends State<LoginView> {
     final authViewModel = Provider.of<AuthViewModel>(context);
 
 
-  final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
+  // final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -113,20 +113,25 @@ class _LoginViewState extends State<LoginView> {
                       child: ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            try {
-                              await authViewModel.login(
+                              try {
+                                await authViewModel.login(
                                   context,
                                   _emailController.text.trim(),
                                   _passwordController.text.trim(),
                                 );
+
+                              GoRouter.of(context).go('/home');
+                                }
+                                catch (e) {
+                                  print("test layer 2");
+                                  SnackbarUtils.showSnackbar(e.toString(), backgroundColor: Colors.red);
+                                }
+                                finally{
+
+              authViewModel.state == ViewState.Idle;
+                                }
                                User? user = _auth.currentUser;
                                print("test layer 1");
-                                //  user.email(_emailController.text.trim());
-                              final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
-                              GoRouter.of(context).go('/home');
-                            } catch (e) {
-                              SnackbarUtils.showSnackbar(e.toString(), backgroundColor: Colors.red);
-                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -140,10 +145,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
               const SizedBox(height: 16),
-              // Google Sign-In Button
-              authViewModel.state == ViewState.Loading
-                  ? const Center(child: CircularProgressIndicator())
-                  :Center(
+              Center(
                 child: ElevatedButton(
                   onPressed: () async {
                     await authViewModel.signInWithGoogle(context);

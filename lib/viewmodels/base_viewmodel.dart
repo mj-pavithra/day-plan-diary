@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 enum ViewState { Idle, Loading, Error , Success}
 class BaseViewModel extends ChangeNotifier {
 
+  String selectedPriority = 'All';
+  bool isTodoSelected = true;
+  int  taskcount= 0;
+
   ViewState _state = ViewState.Idle;
   String _errorMessage = '';
 

@@ -1,9 +1,13 @@
 import 'package:day_plan_diary/data/models/task.dart';
+import 'package:day_plan_diary/services/firebase_service.dart';
 import 'package:day_plan_diary/services/hiveService.dart';
+import 'package:day_plan_diary/services/notification_service.dart';
+import 'package:day_plan_diary/services/session_service.dart';
+import 'package:day_plan_diary/utils/network_utils.dart';
 import 'package:day_plan_diary/utils/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+// import 'package:day_plan_diary/viewmodels/session_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 import './todoListViewModel.dart';
@@ -11,19 +15,91 @@ import 'base_viewmodel.dart';
 
 class TodoItemViewModel extends BaseViewModel {
 
+  late final session;
+  late final FirebaseService _firebaseService;
+  late final HiveService _hiveService;
+  final NotificationService _notificationService = NotificationService();
+
+  TodoItemViewModel() {
+    _firebaseService = FirebaseService();
+    _hiveService = HiveService();
+    _initializeNetworkListener();
+    _initializeSession();
+  }
+  void _initializeNetworkListener() {
+    NetworkUtils.onNetworkChange.listen((isConnected) async {
+      if (isConnected) {
+        await _backupAllTasks();
+        print('Connected to the internet');
+      }
+      else {
+          SnackbarUtils.showSnackbar("Locally saved but online backup is not updated", backgroundColor: const Color.fromARGB(125, 244, 67, 54));
+      }
+    });
+  }
+
+  Future<void> _backupAllTasks() async {
+  try {
+    print("Fetching tasks from local storage...");
+    final allTasks = _hiveService.getAllTasks();
+    if (allTasks.isEmpty) {
+      print("No tasks to backup.");
+      SnackbarUtils.showSnackbar(
+        "No tasks to backup",
+        backgroundColor: Colors.orange,
+      );
+      return;
+    }
+
+    try {
+      print("Backing up tasks to Firebase...");
+      await _firebaseService.backupAllTasks(allTasks);
+      print("Cloud backup completed successfully.");
+      SnackbarUtils.showSnackbar(
+        "Backup completed successfully",
+        backgroundColor: Colors.green,
+      );
+    } catch (e) {
+      print("Error during Firebase backup: $e");
+      SnackbarUtils.showSnackbar(
+        "Error during cloud backup: $e",
+        backgroundColor: Colors.red,
+      );
+    }
+  } catch (e) {
+    print("Error fetching tasks from local storage: $e");
+    SnackbarUtils.showSnackbar(
+      "Error accessing local tasks: $e",
+      backgroundColor: Colors.red,
+    );
+  }
+}
+
+
+  Future<void> _initializeSession() async {
+    session = await SessionService.getInstance();
+  }
+
   var ListViewModel = TodoListViewModel();
 
 Task? task;
   late TextEditingController titleController;
   late TextEditingController dateController;
+  late String taskOwnerEmail;
+  late String taskOwnerId;
+  late String timeToComplete;
+  late String completedTime;
+  @override
   String selectedPriority = 'All';
   late bool isCompleted;
-  final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
-
   
     void initialize(Task task) {
     titleController = TextEditingController(text: task.title);
     dateController = TextEditingController(text: task.date);
+    taskOwnerEmail = task.taskOwnerEmail ?? '';
+    taskOwnerId = task.taskOwnerId;
+    timeToComplete = task.timeToComplete;
+    completedTime = task.completedTime;
     selectedPriority = task.priority ;
     isCompleted = task.isCompleted ;
   }
@@ -41,6 +117,34 @@ Task? task;
     selectedPriority = newPriority;
   }
 
+  void updateCompletion(bool newCompletion) {
+    isCompleted = newCompletion;
+  }
+
+  void updateTitle(String newTitle) {
+    titleController.text = newTitle;
+  }
+
+  void updateDate(String newDate) {
+    dateController.text = newDate;
+  }
+
+  void updateTaskOwnerEmail(String newTaskOwnerEmail) {
+    taskOwnerEmail = newTaskOwnerEmail;
+  }
+
+  void updateTaskOwnerId(String newTaskOwnerId) {
+    taskOwnerId = newTaskOwnerId;
+  }
+
+  void updateTimeToComplete(String newTimeToComplete) {
+    timeToComplete = newTimeToComplete;
+  }
+
+  void updateCompletedTime(String newCompletedTime) {
+    completedTime = newCompletedTime;
+  }
+
 
   Task getUpdatedTask() {
     return Task(
@@ -48,6 +152,10 @@ Task? task;
       title: titleController.text,
       date: dateController.text,
       priority: selectedPriority,
+      timeToComplete: timeToComplete,
+      taskOwnerId: taskOwnerId,
+      taskOwnerEmail: taskOwnerEmail,
+      completedTime: completedTime,
       isCompleted: isCompleted,
     );
   }
@@ -64,54 +172,75 @@ Task? task;
     }
   }
 
+
   // Helper function to validate and save a task
   Future<void> saveTask({
-    required BuildContext context,
-    required int id,
-    required String title,
-    required String date,
-    required String priority,
-  }) async {
-    if (title.isEmpty || date.isEmpty || priority == "Select Priority") {
-      SnackbarUtils.showSnackbar('Please fill all fields', backgroundColor: Colors.red);
-      throw Exception('Please fill all fields');
-    }
+  required BuildContext context,
+  required int id,
+  required String title,
+  required String date,
+  required String priority,
+  required String timeToComplete,
+}) async {
+  if (title.isEmpty || date.isEmpty || priority == "Select Priority") {
+    SnackbarUtils.showSnackbar('Please fill all fields', backgroundColor: Colors.red);
+    throw Exception('Please fill all fields');
+  }
 
-    DateTime selectedDate = DateTime.parse(date);
-    if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
-      SnackbarUtils.showSnackbar('Please select a valid date', backgroundColor: Colors.red);
-      throw Exception('Please select a valid date');
-    }
+  DateTime selectedDate = DateTime.parse(date);
+  if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+    SnackbarUtils.showSnackbar('Please select a valid date', backgroundColor: Colors.red);
+    throw Exception('Please select a valid date');
+  }
 
+  try {
+    // Fetch user details from the session
+    final userId = await session.getUserId();
+    final userEmail = await session.getUserEmail();
+
+    // Create a new task object
     final task = Task(
       id: id,
       title: title,
       date: date,
+      timeToComplete: timeToComplete,
+      taskOwnerId: userId ?? '', // Fallback to empty string if null
+      taskOwnerEmail: userEmail ?? '',
+      completedTime: '',
       priority: priority,
       isCompleted: false,
     );
 
+    // Save the task using HiveService
+    await _hiveService.addTask(task);
+    notifyListeners();
+    GoRouter.of(context).go('/home');
+    SnackbarUtils.showSnackbar(
+      "New task added successfully",
+      backgroundColor: Colors.green,
+    );
+
+      await _backupTaskToFirebase(task);
+  } catch (e) {
+    SnackbarUtils.showSnackbar('Error saving task: $e', backgroundColor: Colors.red);
+    throw Exception('Error saving task: $e');
+  }
+}
+
+Future<void> _backupTaskToFirebase(Task task) async {
     try {
-      final hiveService = HiveService();
-      await hiveService.addTask(task);
-      notifyListeners();
-      GoRouter.of(context).go('/home');
-      SnackbarUtils.showSnackbar(
-        "New task added successfully",
-        backgroundColor: Colors.green,
-      );
-      
+      await _firebaseService.backupTask(task);
     } catch (e) {
-      throw Exception('Error saving task: $e');
+      print('Error backing up task to Firebase: $e');
     }
   }
+
 
   // Delete task via HiveService
   Future<void> deleteTask(int taskKey) async {
 
     try {
-      final hiveService = HiveService();
-      await hiveService.deleteTask(taskKey);
+      await _hiveService.deleteTask(taskKey);
       notifyListeners();
       SnackbarUtils.showSnackbar(
         "Task deleted successfully",
@@ -168,7 +297,7 @@ Task? task;
               child: TextButton(
                 onPressed: () {
                   task.isCompleted = true; 
-                   updateTask(task);
+                  updateTask(task);
                   Provider.of<TodoListViewModel>(context, listen:false).refreshFilteredTasks();
                   print('Completed task:- ${HiveService().getTaskKey(task)}');
                   Navigator.of(context).pop();
@@ -188,31 +317,5 @@ Task? task;
     catch(e) {throw Exception('Error updating task: $e');}
     notifyListeners();
   }
-
-  // void markAsCompleted(BuildContext context, Function updateTask, dynamic task) {
-  //   String taskTitle = task.title;
-  //   bool isCompleted = task.isCompleted;
-
-  //     final updatedTask = task.changedTask(isCompleted: true); // Assuming copyWith is implemented
-  //     updateTask(task.id, updatedTask);
-  //     SnackbarUtils.showSnackbar('Task marked as completed', backgroundColor: Colors.green);
-  //     notifyListeners();
-  //   }
-    // Future<void> updateTask(BuildContext context, taskId, tasktoUpdate) async {
-
-    //   print('updateTask in View model is called');
-    //     final task = tasktoUpdate;
-    //     final hiveService = HiveService();
-    //     try
-    //     {
-    //       await hiveService.updateTask(taskId, task);
-    //       notifyListeners();
-    //     }
-    //     catch(e)
-    //     {
-    //       throw Exception('Error updating task: $e');
-    //     }
-    //   }
-
 
 }
