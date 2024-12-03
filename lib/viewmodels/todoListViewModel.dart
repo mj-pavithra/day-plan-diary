@@ -9,17 +9,53 @@ import 'base_viewmodel.dart';
 
 class TodoListViewModel extends BaseViewModel {
   final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
+  bool _isSessionInitialized = false;
 
-  SessionService? _session; // Make session nullable until initialized
+    Future<Map<String, dynamic>> _fetchUserDetails() async {
+    final session = await SessionService.getInstance();
+    return await session?.getUserDetails() ?? {};
+    notifyListeners();
+  }
+
+  late String userEmail;
 
   TodoListViewModel() {
     _initializeSession();
+    _fetchUserDetails().then((details) {
+      userEmail = details['userEmail'];
+    });
   }
 
-  Future<void> _initializeSession() async {
-    _session = await SessionService.getInstance();
-    notifyListeners(); // Notify listeners after session is initialized
+  SessionService? _session; // Session instance
+  late String? _userEmail; // Store resolved email
+  String? _userId;   // Store resolved userId
+
+  // TodoListViewModel() {
+  //   _initializeSession();
+  // }
+
+Future<void> _initializeSession() async {
+  // if (_isSessionInitialized) return;
+  print("Initializing Session...");
+  try {
+    final session = await SessionService.getInstance();
+    if (session != null) {
+      _userEmail = session.getUserEmail();
+      _userId = session.getUserId();
+    }
+  // _isSessionInitialized = true;
+    // print("User Email in ViewModel: $_userEmail");
+    // print("User ID in ViewModel: $_userId");
+  } catch (e) {
+    // print("Error initializing session: $e");
+  } finally {
+    // print("Session Initialization Complete");
+    notifyListeners();
   }
+}
+
+
+
 
   void toggleTodoSelection(bool isTodo) {
     isTodoSelected = isTodo;
@@ -35,28 +71,34 @@ class TodoListViewModel extends BaseViewModel {
     return isTodoSelected;
   }
 
+  void setLogOut(bool isLogOut) {
+    _isSessionInitialized = false;
+  }
+
+void setUserEmail(String email) {
+    _userEmail = email;
+    notifyListeners();
+  }
+
+
+
+
+
   List<Task> get filteredTasks {
-    HiveService().getAllTasks();
-
-    // If session is not initialized yet, return an empty list
-    if (_session == null) {
-      return [];
+    if (_userEmail != userEmail) {
+      print("Mismatch detected. Updating local userEmail to match global _userEmail.");
+      userEmail = _userEmail ?? ""; // Update local variable
     }
-
+    HiveService().getAllTasks();
+    print('user email: $_userEmail');
     final bool filterByCompletion = !isTodoSelected;
 
-
-    final userEmail =  _session!.getUserEmail();
-    final userID = _session!.getUserId();
-    print('************${userEmail}');
-    print('************${userID}');
-
     return _taskBox.values.where((task) {
+      print('Current user email: $userEmail ------- Task Owner email: ${task.taskOwnerEmail}');
       final bool matchesCompletion = task.isCompleted == filterByCompletion;
       final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
-      // final bool matchOwner = task.taskOwnerEmail == _session!.getUserEmail(); // Safe to use session now
-      
-      return matchesCompletion && matchesPriority ;
+      final bool matchOwner = task.taskOwnerEmail == userEmail;
+      return matchesCompletion && matchesPriority && matchOwner;
     }).toList();
   }
 

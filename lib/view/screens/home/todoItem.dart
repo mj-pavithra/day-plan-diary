@@ -1,10 +1,8 @@
 import 'package:day_plan_diary/helpers/dateFormatter.dart';
-import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
 import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 class ToDoItem extends StatelessWidget {
   final TodoItemViewModel viewModel;
@@ -51,7 +49,7 @@ print(isTodoSelected) ;
                     style: const TextStyle(color: Colors.grey),
                   ),
                   const Spacer(),
-                  Provider.of<BaseViewModel>(context , listen: false).isTodoSelected ?
+                  isTodoSelected ?
                     IconButton(
                       icon: const Icon(Icons.edit_note),
                       color: const Color.fromARGB(255, 0, 0, 0),

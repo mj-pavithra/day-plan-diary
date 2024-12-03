@@ -29,7 +29,7 @@ class AuthViewModel extends BaseViewModel {
 
 Future<void> login(BuildContext context, String email, String password) async {
   setLoading(); // Set loading state to show progress indicator
-  
+
   // try {
     // Perform login and get Firebase User
     final UserCredential userCredential = await _authRepository.login(email, password);
@@ -102,30 +102,36 @@ Future<void> signInWithGoogle(BuildContext context) async {
       setIdle();
     }
   }
-  Future<void> logout(BuildContext context) async {
-  setState(ViewState.Loading);
+Future<void> logout(BuildContext context) async {
+  setState(ViewState.Loading); // Set state to loading
   try {
-    // Sign out from Firebase
+    // Sign out from Firebase Authentication
     await _auth.signOut();
 
     // Sign out from Google
     await _googleSignIn.signOut();
 
-    // Clear SharedPreferences data
+    // Clear all data from SharedPreferences
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Remove all stored data
+    await prefs.clear(); // Completely clear SharedPreferences
 
-    // Optionally notify SessionViewModel to reset session state
+    // Clear session details using SessionService
     final sessionService = await SessionService.getInstance();
-    await sessionService?.clearUserDetails(); // 'user' is a Firebase User object
+    await sessionService?.clearUserDetails(); // Ensure custom session cleanup logic
 
-    print("User has logged out successfully.");
+    print("User has been logged out and session data cleared.");
+
+    // Navigate to the login screen
+    GoRouter.of(context).go('/login'); // Adjust the route to your login page
   } catch (e) {
     print("Logout failed: $e");
+    SnackbarUtils.showSnackbar(
+      "Logout failed. Please try again.",
+      backgroundColor: Colors.red,
+    );
   } finally {
-    setState(ViewState.Idle);
+    setState(ViewState.Idle); // Reset state to idle
   }
 }
-
 
 }

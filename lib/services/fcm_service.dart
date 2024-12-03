@@ -1,6 +1,8 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:day_plan_diary/data/models/task.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class FirebaseService {
   final _database = FirebaseDatabase.instance.ref();
@@ -23,7 +25,19 @@ class FirebaseService {
   }
 }
 
+  Future<void> handleBackgroundMessage(RemoteMessage message) async {
+    print('Message received in background: ${message.notification?.title}');
+  }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void handleMessage(RemoteMessage? message) {
+  if (message != null) {
+    navigatorKey.currentState?.pushNamed('/notification', arguments: message);
+  }
+
+
+ }
 class FCMService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
@@ -39,8 +53,32 @@ class FCMService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Message received in foreground: ${message.notification?.title}');
     });
+    // FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+    initPushNotification();
 
     final token = await _firebaseMessaging.getToken();
     print('Device token: $token');
+  }
+
+  Future initPushNotification() async {
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      handleMessage(message);
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      handleMessage(message);
+    });
+    FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+    FirebaseMessaging.onMessage.listen((message) {
+      final notification = message.notification;
+      if (notification != null) {
+        print('Message received in foreground: ${notification.title}');
+      }
+      // _localNotifications.show(message);
+    });
   }
 }

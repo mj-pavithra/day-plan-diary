@@ -29,7 +29,7 @@ class TodoItemViewModel extends BaseViewModel {
   void _initializeNetworkListener() {
     NetworkUtils.onNetworkChange.listen((isConnected) async {
       if (isConnected) {
-        await _backupAllTasks();
+        // await _backupAllTasks();
         print('Connected to the internet');
       }
       else {
@@ -38,42 +38,42 @@ class TodoItemViewModel extends BaseViewModel {
     });
   }
 
-  Future<void> _backupAllTasks() async {
-  try {
-    print("Fetching tasks from local storage...");
-    final allTasks = _hiveService.getAllTasks();
-    if (allTasks.isEmpty) {
-      print("No tasks to backup.");
-      SnackbarUtils.showSnackbar(
-        "No tasks to backup",
-        backgroundColor: Colors.orange,
-      );
-      return;
-    }
+//   Future<void> _backupAllTasks() async {
+//   try {
+//     print("Fetching tasks from local storage...");
+//     final allTasks = _hiveService.getAllTasks();
+//     if (allTasks.isEmpty) {
+//       print("No tasks to backup.");
+//       SnackbarUtils.showSnackbar(
+//         "No tasks to backup",
+//         backgroundColor: Colors.orange,
+//       );
+//       return;
+//     }
 
-    try {
-      print("Backing up tasks to Firebase...");
-      await _firebaseService.backupAllTasks(allTasks);
-      print("Cloud backup completed successfully.");
-      SnackbarUtils.showSnackbar(
-        "Backup completed successfully",
-        backgroundColor: Colors.green,
-      );
-    } catch (e) {
-      print("Error during Firebase backup: $e");
-      SnackbarUtils.showSnackbar(
-        "Error during cloud backup: $e",
-        backgroundColor: Colors.red,
-      );
-    }
-  } catch (e) {
-    print("Error fetching tasks from local storage: $e");
-    SnackbarUtils.showSnackbar(
-      "Error accessing local tasks: $e",
-      backgroundColor: Colors.red,
-    );
-  }
-}
+//     try {
+//       print("Backing up tasks to Firebase...");
+//       await _firebaseService.backupAllTasks(allTasks);
+//       print("Cloud backup completed successfully.");
+//       SnackbarUtils.showSnackbar(
+//         "Backup completed successfully",
+//         backgroundColor: Colors.green,
+//       );
+//     } catch (e) {
+//       print("Error during Firebase backup: $e");
+//       SnackbarUtils.showSnackbar(
+//         "Error during cloud backup: $e",
+//         backgroundColor: Colors.red,
+//       );
+//     }
+//   } catch (e) {
+//     print("Error fetching tasks from local storage: $e");
+//     SnackbarUtils.showSnackbar(
+//       "Error accessing local tasks: $e",
+//       backgroundColor: Colors.red,
+//     );
+//   }
+// }
 
 
   Future<void> _initializeSession() async {
@@ -174,7 +174,7 @@ Task? task;
 
 
   // Helper function to validate and save a task
-  Future<void> saveTask({
+Future<void> saveTask({
   required BuildContext context,
   required int id,
   required String title,
@@ -214,13 +214,22 @@ Task? task;
     // Save the task using HiveService
     await _hiveService.addTask(task);
     notifyListeners();
+
+    // Schedule a notification
+    final notificationTime = selectedDate.add(const Duration(hours: 9)); // Example: 9 AM on the task date
+    await NotificationService().scheduleNotification(
+      title: 'Task Reminder',
+      body: 'Don\'t forget: $title',
+      scheduledTime: DateTime.now().add(const Duration(seconds: 1)), // Trigger immediately for demonstration
+    );
+
     GoRouter.of(context).go('/home');
     SnackbarUtils.showSnackbar(
       "New task added successfully",
       backgroundColor: Colors.green,
     );
 
-      await _backupTaskToFirebase(task);
+    await _backupTaskToFirebase(task);
   } catch (e) {
     SnackbarUtils.showSnackbar('Error saving task: $e', backgroundColor: Colors.red);
     throw Exception('Error saving task: $e');

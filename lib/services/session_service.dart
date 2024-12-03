@@ -1,10 +1,18 @@
+import 'dart:async';
+
+import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../utils/session_constants.dart';
 
 class SessionService {
+  bool isPrefsInitialized() => _prefs != null;
   static SessionService? _instance;
   static late SharedPreferences _prefs;
+  static final Completer<void> _prefsCompleter = Completer<void>();
+
+  TodoListViewModel todoListViewModel = TodoListViewModel();
 
   // Private constructor
   SessionService._internal();
@@ -15,18 +23,46 @@ class SessionService {
   }
 
   // Singleton instance initializer
-  static Future<SessionService?> getInstance() async {
+  // static Future<SessionService?> getInstance() async {
+  //   if (_instance == null) {
+  //     _instance = SessionService._internal();
+  //     await _instance!._initializeSharedPreferences();
+  //   }
+  //   return _instance;
+  // }
+static Future<SessionService?> getInstance() async {
+  print("*******************Getting SharedPreferences Instance******************");
     if (_instance == null) {
       _instance = SessionService._internal();
-      await _instance!._initializeSharedPreferences();
+      print("Initializing SharedPreferences...");
+     await  _instance!._initializeSharedPreferences();
     }
+
+    // Wait for `_prefs` initialization if it is still in progress
+    if (!_prefsCompleter.isCompleted) {
+      await _prefsCompleter.future;
+    }
+
+    print("SharedPreferences Initialized: $_prefs");
     return _instance;
   }
 
-  // Initialize SharedPreferences
   Future<void> _initializeSharedPreferences() async {
-    _prefs = await SharedPreferences.getInstance();
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      print("SharedPreferences Initialized: $_prefs");
+      if (!_prefsCompleter.isCompleted) {
+        _prefsCompleter.complete();
+      }
+    } catch (e) {
+      print("Error during SharedPreferences initialization: $e");
+      if (!_prefsCompleter.isCompleted) {
+        _prefsCompleter.completeError(e);
+      }
+    }
   }
+  // Initialize SharedPreferences
+
 
 
   // Save user details in SharedPreferences
@@ -40,11 +76,18 @@ class SessionService {
 
   // Clear all user details
   Future<void> clearUserDetails() async {
+    // todoListViewModel.setLogOut(true);
     await _prefs.clear();
+    _prefs.remove(SessionConstants.userEmail);
+    _prefs.remove(SessionConstants.userId);
   }
 
   // Get all user details as a map
   Future<Map<String, dynamic>> getUserDetails() async {
+    if (!isPrefsInitialized()) {
+        print("Error: SharedPreferences not initialized.");
+        return {};
+    }
     final isLoggedIn = _prefs.getBool(SessionConstants.isLoggedIn) ?? false;
     final userId = _prefs.getString(SessionConstants.userId);
     final userEmail = _prefs.getString(SessionConstants.userEmail);
@@ -61,19 +104,20 @@ class SessionService {
   }
 
   // Get the user's name
-  Future<String> getUserName() async {
+  String getUserName()  {
     return _prefs.getString(SessionConstants.userName) ?? 'User Name';
   }
-  Future<String> getUserEmail() async {
+String getUserEmail() {
     return _prefs.getString(SessionConstants.userEmail) ?? 'User Email';
-  }
-  Future<String> getUserPhotoUrl() async {
+}
+
+  String getUserPhotoUrl()  {
     return _prefs.getString(SessionConstants.userPhotoUrl) ?? 'https://cdn-icons-png.flaticon.com/128/3135/3135715.png';
   }
-  Future<String> getUserId() async {
+  String getUserId()  {
     return _prefs.getString(SessionConstants.userId) ?? 'User ID';
   }
-  Future<bool> getIsLoggedIn() async {
+  bool getIsLoggedIn()  {
     return _prefs.getBool(SessionConstants.isLoggedIn) ?? false;
   }
   

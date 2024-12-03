@@ -27,7 +27,7 @@ class HiveService {
     List.generate (allTasks.length, (index) {
       final task = allTasks[index];
       final taskKey = getTaskKey(task);
-      print('Task key: $taskKey  Title: ${task.title} isCompleted: ${task.isCompleted} Priority: ${task.priority} Date: ${task.date} Time to complete: ${task.timeToComplete} Task Owner Id: ${task.taskOwnerId} Task Owner Email: ${task.taskOwnerEmail} Completed Time: ${task.completedTime} isVisible: ${task.isVisible} ');
+      // print('Task key: $taskKey  Title: ${task.title} isCompleted: ${task.isCompleted} Priority: ${task.priority} Date: ${task.date} Time to complete: ${task.timeToComplete} Task Owner Id: ${task.taskOwnerId} Task Owner Email: ${task.taskOwnerEmail} Completed Time: ${task.completedTime} isVisible: ${task.isVisible} ');
       });
     return allTasks;
   }

@@ -61,42 +61,44 @@ class ToDoBody extends StatelessWidget {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  TextButton(
-                    onPressed: () => todoListViewModel.setTodoSelection(true),
-                    child: Text(
-                      'TODO',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: todoListViewModel.isTodoSelected
-                                ?  const Color.fromARGB(206, 87, 39, 176)
-                                : Colors.grey,
+            Consumer<TodoListViewModel>(
+              builder: (context, todoListViewModel, child) => Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    TextButton(
+                      onPressed: () => todoListViewModel.setTodoSelection(true),
+                      child: Text(
+                        'TODO',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: todoListViewModel.isTodoSelected
+                                  ?  const Color.fromARGB(206, 87, 39, 176)
+                                  : Colors.grey,
+                        ),
                       ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: todoListViewModel.isTodoSelected
-                            ? () {
-                                todoListViewModel.setTodoSelection(false);
-                              }
-                            : null, // Disables the button if the condition is not met
-                        child: Text(
-                          'COMPLETED',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: !todoListViewModel.isTodoSelected
-                                ?  const Color.fromARGB(206, 87, 39, 176)
-                                : Colors.grey,
+                    TextButton(
+                      onPressed: todoListViewModel.isTodoSelected
+                              ? () {
+                                  todoListViewModel.setTodoSelection(false);
+                                }
+                              : null, // Disables the button if the condition is not met
+                          child: Text(
+                            'COMPLETED',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: !todoListViewModel.isTodoSelected
+                                  ?  const Color.fromARGB(206, 87, 39, 176)
+                                  : Colors.grey,
+                            ),
                           ),
-                        ),
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
             Expanded(

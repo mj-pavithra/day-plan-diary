@@ -9,12 +9,21 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final bool isTodoSelected;
+
+  const HomePage({
+    super.key,
+    required this.isTodoSelected
+  });
 
   @override
   Widget build(BuildContext context) {
     final authViewModel = Provider.of<AuthViewModel>(context);
+    final BaseViewModel baseViewModel = Provider.of<BaseViewModel>(context);
 
+    bool isUserLoggedIn = baseViewModel.isTodoSelected;
+    print('*********** $isUserLoggedIn *****');
+    print('++++++ $isTodoSelected ++++++');
     
     return Scaffold(
       backgroundColor: Colors.white,
@@ -27,7 +36,6 @@ class HomePage extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator(); // Show loading spinner
-                
               }
               if (snapshot.hasError) {
                 return const Text('Error fetching user details');
@@ -95,13 +103,13 @@ class HomePage extends StatelessWidget {
       ),
       body: const ToDoBody(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Provider.of<BaseViewModel>(context, listen: false).isTodoSelected
-    ? FloatingActionButton(
-        onPressed: () => context.go('/newtask'),
-        child: const Icon(Icons.add),
-      )
-    : null,
-    );
+      floatingActionButton: isTodoSelected
+        ? FloatingActionButton(
+            onPressed: () => context.go('/newtask'),
+            child: const Icon(Icons.add),
+          )
+        : const Spacer(),
+        );
   }
 
   Future<Map<String, dynamic>> _fetchUserDetails() async {
