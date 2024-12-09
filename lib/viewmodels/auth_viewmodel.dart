@@ -26,7 +26,7 @@ class AuthViewModel extends BaseViewModel {
       setState(ViewState.Idle);
     } 
   }
-
+//todo: implement login
 Future<void> login(BuildContext context, String email, String password) async {
   setLoading(); // Set loading state to show progress indicator
 
@@ -38,9 +38,7 @@ Future<void> login(BuildContext context, String email, String password) async {
     print("test layer 3");
     // Save session with retrieved user details
   print('Save session for ${user.email}');
-  
-    final sessionService = await SessionService.getInstance();
-    await sessionService?.saveUserDetails(user); // 'user' is a Firebase User object
+  // 'user' is a Firebase User object
 
     print("test layer 4");
     // Navigate to Home
@@ -79,10 +77,8 @@ Future<void> signInWithGoogle(BuildContext context) async {
       print('User logged in: ID = ${user.uid}, Email = ${user.email}');
 
       // Save session
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-      final sessionService = await SessionService.getInstance();
-      await sessionService?.saveUserDetails(user); // 'user' is a Firebase User object
+      // final SharedPreferences prefs = await SharedPreferences.getInstance();
+      // 'user' is a Firebase User object
 
       GoRouter.of(context).go('/home');
     }
@@ -117,12 +113,11 @@ Future<void> logout(BuildContext context) async {
 
     // Clear session details using SessionService
     final sessionService = await SessionService.getInstance();
-    await sessionService?.clearUserDetails(); // Ensure custom session cleanup logic
-
+    await FirebaseAuth.instance.signOut();
     print("User has been logged out and session data cleared.");
 
     // Navigate to the login screen
-    GoRouter.of(context).go('/login'); // Adjust the route to your login page
+    GoRouter.of(context).go('/login'); 
   } catch (e) {
     print("Logout failed: $e");
     SnackbarUtils.showSnackbar(

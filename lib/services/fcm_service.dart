@@ -2,7 +2,6 @@ import 'package:day_plan_diary/data/models/task.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class FirebaseService {
   final _database = FirebaseDatabase.instance.ref();
@@ -35,8 +34,6 @@ void handleMessage(RemoteMessage? message) {
   if (message != null) {
     navigatorKey.currentState?.pushNamed('/notification', arguments: message);
   }
-
-
  }
 class FCMService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;

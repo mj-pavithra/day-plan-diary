@@ -7,7 +7,7 @@ import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+// import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart'; 
 
 class LoginView extends StatefulWidget {
@@ -27,7 +27,7 @@ class _LoginViewState extends State<LoginView> {
 
   // Initialize FirebaseAuth and GoogleSignIn
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  // final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Future<void> _signInWithGoogle() async {
   //   try {
@@ -114,6 +114,7 @@ class _LoginViewState extends State<LoginView> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                               try {
+                                print('test layer 2 : goog way');
                                 await authViewModel.login(
                                   context,
                                   _emailController.text.trim(),
@@ -125,13 +126,14 @@ class _LoginViewState extends State<LoginView> {
                                 catch (e) {
                                   print("test layer 2");
                                   SnackbarUtils.showSnackbar(e.toString(), backgroundColor: Colors.red);
+              authViewModel.state == ViewState.Idle;
                                 }
                                 finally{
 
               authViewModel.state == ViewState.Idle;
                                 }
-                               User? user = _auth.currentUser;
-                               print("test layer 1");
+                              // User? user = _auth.currentUser;
+                              print("test layer 1");
                           }
                         },
                         style: ElevatedButton.styleFrom(

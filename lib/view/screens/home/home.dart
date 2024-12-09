@@ -1,7 +1,7 @@
 import 'package:day_plan_diary/services/session_service.dart';
 import 'package:day_plan_diary/view/screens/home/todoBody.dart';
 import 'package:day_plan_diary/view/widgets/greeting.dart';
-import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
+// import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +18,10 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = Provider.of<AuthViewModel>(context);
+    // final authViewModel = Provider.of<AuthViewModel>(context);
     final BaseViewModel baseViewModel = Provider.of<BaseViewModel>(context);
+
+    User user = FirebaseAuth.instance.currentUser!;
 
     bool isUserLoggedIn = baseViewModel.isTodoSelected;
     print('*********** $isUserLoggedIn *****');
@@ -31,24 +33,12 @@ class HomePage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         title: SafeArea(
-          child: FutureBuilder<Map<String, dynamic>>(
-            future: _fetchUserDetails(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator(); // Show loading spinner
-              }
-              if (snapshot.hasError) {
-                return const Text('Error fetching user details');
-              }
-
-              final userName = snapshot.data?['userName'] ?? 'User Name';
-              print('User name: $userName');
-              return Column(
+          child:  Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Greeting(),
                   Text(
-                    userName,
+                     user.displayName!,
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 22,
@@ -56,22 +46,15 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ],
-              );
-            },
-          ),
+              )
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: FutureBuilder<Map<String, dynamic>>(
-              future: _fetchUserDetails(),
-              builder: (context, snapshot) {
-                final displayPhoto = snapshot.data?['userPhotoUrl'] ?? 'https://cdn-icons-png.flaticon.com/128/3135/3135715.png';
-              print ('User photo: $displayPhoto ');
-                return DropdownButtonHideUnderline(
+            child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     icon: CircleAvatar(
-                    backgroundImage: NetworkImage(displayPhoto ),
+                    backgroundImage: NetworkImage(user.photoURL ?? ''),
                     radius: 20,
                   ),
                     items: const [
@@ -89,15 +72,12 @@ class HomePage extends StatelessWidget {
                     onChanged: (value) async {
                       if (value == 'logout') {
                         await FirebaseAuth.instance.signOut();
-                        final session = await SessionService.getInstance();
-                        await session?.clearUserDetails();
+                        await FirebaseAuth.instance.signOut();
                         GoRouter.of(context).go('/login');
                       }
                     },
                   ),
-                );
-              },
-            ),
+                )
           ),
         ],
       ),
@@ -110,17 +90,6 @@ class HomePage extends StatelessWidget {
           )
         : const Spacer(),
         );
-  }
-
-  Future<Map<String, dynamic>> _fetchUserDetails() async {
-    final session = await SessionService.getInstance();
-    return await session?.getUserDetails() ?? {};
-  }
-
-  Future<String> _fetchUserPhoto() async {
-    final session = await SessionService.getInstance();
-    return session?.getUserName() ??
-        'https://cdn-icons-png.flaticon.com/128/3135/3135715.png';
   }
 
 }

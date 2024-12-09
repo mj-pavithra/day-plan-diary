@@ -5,16 +5,17 @@ part 'task.g.dart';
 @HiveType(typeId: 1)
 class Task {
   Task({
-    required this.id,
+    this.id = -1,
     required this.title,
     required this.date,
     required this.priority,
     required this.timeToComplete,
-    required this.taskOwnerId,
+    this.taskOwnerId = '',
     this.taskOwnerEmail,
     this.completedTime = '',
     this.isCompleted = false,
     this.isVisible = true,
+    this.idFirestore = '',
   });
   @HiveField(0)
   int id;
@@ -47,35 +48,33 @@ class Task {
   @HiveField(9)
   bool isVisible;
 
+  @HiveField(10)
+  String idFirestore;
+
   
 
-  Task changedTask({
-    required Task CurrentTask,
-    int? id,
-    String? title,
-    String? date,
-    String? priority,
-    String? timeToComplete,
-    String? taskOwnerId,
-    String? taskOwnerEmail,
-    String? completedTime,
-    bool? isCompleted,
-    bool? isVisible
-  }) {
-    print("change task is called: $id, $title, $date, $priority, $taskOwnerId, $taskOwnerEmail, $timeToComplete, $isCompleted, $isVisible");
-    return Task(
-      id: id ?? CurrentTask.id,
-      title: title ?? CurrentTask.title,
-      date: date ?? CurrentTask.date,
-      priority: priority ?? CurrentTask.priority,
-      timeToComplete: timeToComplete ?? CurrentTask.timeToComplete,
-      taskOwnerId: taskOwnerId ?? CurrentTask.taskOwnerId,
-      taskOwnerEmail: taskOwnerEmail ?? CurrentTask.taskOwnerEmail,
-      completedTime: completedTime ?? CurrentTask.completedTime,
-      isCompleted: isCompleted ?? CurrentTask.isCompleted,
-      isVisible: isVisible?? CurrentTask.isVisible
-    );
-  }
+  // Task changedTask({
+  //   required Task CurrentTask,
+  //   String? id,
+  //   String? title,
+  //   String? date,
+  //   String? priority,
+  //   String? timeToComplete,
+  //   String? completedTime,
+  //   bool? isCompleted,
+  // }) {
+  //   print("change task is called: $id, $title, $date, $priority, $timeToComplete, $isCompleted, $isVisible");
+  //   return Task(
+  //     id: id ?? CurrentTask.id,
+  //     title: title ?? CurrentTask.title,
+  //     date: date ?? CurrentTask.date,
+  //     priority: priority ?? CurrentTask.priority,
+  //     timeToComplete: timeToComplete ?? CurrentTask.timeToComplete,
+  //     completedTime: completedTime ?? CurrentTask.completedTime,
+  //     isCompleted: isCompleted ?? CurrentTask.isCompleted,
+  //     idFirestore: CurrentTask.idFirestore,
+  //   );
+  // }
   
 
   Map<String, dynamic> toMap() {
@@ -85,11 +84,9 @@ class Task {
       'date': date,
       'priority': priority,
       'timeToComplete': timeToComplete,
-      'taskOwnerId': taskOwnerId,
-      'taskOwnerEmail': taskOwnerEmail,
       'completedTime': completedTime,
       'isCompleted': isCompleted,
-      'isVisible': isVisible,
+      'idFirestore': idFirestore,
     };
   }
   Map<String, dynamic> toJson() {
@@ -99,10 +96,26 @@ class Task {
       'date': date,
       'priority': priority,
       'timeToComplete': timeToComplete,
-      'taskOwnerId': taskOwnerId,
-      'taskOwnerEmail': taskOwnerEmail,
       'completedTime': completedTime,
       'isCompleted': isCompleted,
+      'idFirestore': idFirestore,
     };
   }
-}
+  factory Task.fromMap(Map<String, dynamic> map){
+    return Task(
+      date:map['date'],
+      id: map['taskId'],
+      title: map['title'],
+      priority: map['priority'],
+      timeToComplete: map['timeToComplete'],
+      taskOwnerId: map['taskOwnerId'],
+      taskOwnerEmail: map['taskOwnerEmail'],
+      completedTime: map['completedTime'],
+      isCompleted: map['isCompleted'],
+      idFirestore: map['idFirestore'],
+    );
+
+    }
+
+  }
+

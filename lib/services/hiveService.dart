@@ -2,7 +2,7 @@ import 'package:day_plan_diary/data/models/task.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class HiveService {
-  static late Box<Task> taskBox;
+  static Box<Task>? taskBox;
 
   static Future<void> initializeHive() async {
     if (!Hive.isAdapterRegistered(1)) {
@@ -12,30 +12,24 @@ class HiveService {
   }
 
   Future<void> addTask(Task task) async {
-    await taskBox.add(task);
+    await taskBox?.add(task);
   }
 
   Future<void> deleteTask(int index) async {
-    await taskBox.deleteAt(index);
+    await taskBox?.deleteAt(index);
   }
 
 
 
   List<Task> getAllTasks() {
-    List<Task> allTasks =taskBox.values.toList();
-
-    List.generate (allTasks.length, (index) {
-      final task = allTasks[index];
-      final taskKey = getTaskKey(task);
-      // print('Task key: $taskKey  Title: ${task.title} isCompleted: ${task.isCompleted} Priority: ${task.priority} Date: ${task.date} Time to complete: ${task.timeToComplete} Task Owner Id: ${task.taskOwnerId} Task Owner Email: ${task.taskOwnerEmail} Completed Time: ${task.completedTime} isVisible: ${task.isVisible} ');
-      });
+    List<Task> allTasks = taskBox?.values.toList() ?? [];
     return allTasks;
   }
 
   int getTaskKey(Task task) {
-    final taskIndex = taskBox.values.toList().indexOf(task);
+    final taskIndex = taskBox?.values.toList().indexOf(task) ?? -1;
     if (taskIndex != -1) {
-      return taskBox.keyAt(taskIndex);
+      return taskBox?.keyAt(taskIndex) ?? 0;
     }
     return 0;
   }
@@ -43,10 +37,10 @@ class HiveService {
   Future<void> updateTask( Task updatedTask) async {
     int taskId = getTaskKey(updatedTask);
     try {
-      await taskBox.putAt(taskId, updatedTask);
-      print('Reach hive service');
+      await taskBox?.putAt(taskId, updatedTask);
+      // print('Reach hive service');
     } catch (e) {
-      print('Error updating task: $e');
+      // print('Error updating task: $e');
     }
   }
 }

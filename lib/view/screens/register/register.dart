@@ -96,7 +96,7 @@ class _RegisterViewState extends State<RegisterView> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Registration successful')),
                               );
-                              GoRouter.of(context).go('/');
+                              GoRouter.of(context).go('/login');
                             } catch (e) {
                               SnackbarUtils.showSnackbar(e.toString(), backgroundColor: Colors.red  
                               );
@@ -122,7 +122,7 @@ class _RegisterViewState extends State<RegisterView> {
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
-                        GoRouter.of(context).go('/');
+                        GoRouter.of(context).go('/login');
                       },style: ElevatedButton.styleFrom(
                         minimumSize: const Size(300, 50),
                         backgroundColor: const Color.fromARGB(255, 255, 255, 255),

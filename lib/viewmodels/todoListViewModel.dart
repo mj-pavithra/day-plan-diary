@@ -1,5 +1,8 @@
+import 'package:day_plan_diary/services/firestore_service.dart';
 import 'package:day_plan_diary/services/hiveService.dart';
 import 'package:day_plan_diary/services/session_service.dart';
+import 'package:day_plan_diary/utils/network_utils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -9,53 +12,20 @@ import 'base_viewmodel.dart';
 
 class TodoListViewModel extends BaseViewModel {
   final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
-  bool _isSessionInitialized = false;
+  bool _networkAvailable = true; // Not final, so it can be updated dynamically
+  bool get networkAvailable => _networkAvailable;
 
-    Future<Map<String, dynamic>> _fetchUserDetails() async {
-    final session = await SessionService.getInstance();
-    return await session?.getUserDetails() ?? {};
-    notifyListeners();
-  }
-
-  late String userEmail;
+  final FirestoreService _firestoreService = FirestoreService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   TodoListViewModel() {
-    _initializeSession();
-    _fetchUserDetails().then((details) {
-      userEmail = details['userEmail'];
+    // Initialize network listener
+    NetworkUtils.initialize();
+    NetworkUtils.onNetworkChange.listen((networkStatus) {
+      _networkAvailable = networkStatus;
+      notifyListeners(); // Notify listeners to update the UI
     });
   }
-
-  SessionService? _session; // Session instance
-  late String? _userEmail; // Store resolved email
-  String? _userId;   // Store resolved userId
-
-  // TodoListViewModel() {
-  //   _initializeSession();
-  // }
-
-Future<void> _initializeSession() async {
-  // if (_isSessionInitialized) return;
-  print("Initializing Session...");
-  try {
-    final session = await SessionService.getInstance();
-    if (session != null) {
-      _userEmail = session.getUserEmail();
-      _userId = session.getUserId();
-    }
-  // _isSessionInitialized = true;
-    // print("User Email in ViewModel: $_userEmail");
-    // print("User ID in ViewModel: $_userId");
-  } catch (e) {
-    // print("Error initializing session: $e");
-  } finally {
-    // print("Session Initialization Complete");
-    notifyListeners();
-  }
-}
-
-
-
 
   void toggleTodoSelection(bool isTodo) {
     isTodoSelected = isTodo;
@@ -71,35 +41,39 @@ Future<void> _initializeSession() async {
     return isTodoSelected;
   }
 
-  void setLogOut(bool isLogOut) {
-    _isSessionInitialized = false;
-  }
+  Future<List<Task>> get filteredTasks async {
+    final String _userId = _auth.currentUser!.uid;
+    print('User ID: $_userId');
+    
+    if (!_networkAvailable) {
+      print('Data get from hive');
+      HiveService().getAllTasks();
+      print('user email: ${_auth.currentUser!.email.toString()}');
+      final bool filterByCompletion = isTodoSelected;
+      SessionService().setCounter(_taskBox.length);
 
-void setUserEmail(String email) {
-    _userEmail = email;
-    notifyListeners();
-  }
-
-
-
-
-
-  List<Task> get filteredTasks {
-    if (_userEmail != userEmail) {
-      print("Mismatch detected. Updating local userEmail to match global _userEmail.");
-      userEmail = _userEmail ?? ""; // Update local variable
+      return _taskBox.values.where((task) {
+        print('Current user email: ${_auth.currentUser!.email.toString()} ------- Task Owner email: ${task.taskOwnerEmail}');
+        final bool matchesCompletion = task.isCompleted == filterByCompletion;
+        final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
+        return matchesCompletion && matchesPriority;
+      }).toList();
+    } else {
+      print('Data get from firestore');
+      try {
+        final List<Task> allTasks = await _firestoreService.getTasks(_userId);
+        final bool filterByCompletion = isTodoSelected;
+        return allTasks.where((task) {
+          print('${task.title} ${task.priority}  ${task.isCompleted} ${task.taskOwnerEmail}');
+          final bool matchesCompletion = task.isCompleted == filterByCompletion;
+          final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
+          return matchesCompletion && matchesPriority;
+        }).toList();
+      } catch (e) {
+        print('Error getting tasks: $e');
+        return [];
+      }
     }
-    HiveService().getAllTasks();
-    print('user email: $_userEmail');
-    final bool filterByCompletion = !isTodoSelected;
-
-    return _taskBox.values.where((task) {
-      print('Current user email: $userEmail ------- Task Owner email: ${task.taskOwnerEmail}');
-      final bool matchesCompletion = task.isCompleted == filterByCompletion;
-      final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
-      final bool matchOwner = task.taskOwnerEmail == userEmail;
-      return matchesCompletion && matchesPriority && matchOwner;
-    }).toList();
   }
 
   void refreshTaskList() {

@@ -1,3 +1,4 @@
+import 'package:day_plan_diary/services/firestore_service.dart';
 import 'package:day_plan_diary/services/notification_service.dart';
 import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
@@ -13,22 +14,36 @@ import 'services/hiveService.dart';
 import 'utils/snackbar.dart';
 import 'viewmodels/auth_viewmodel.dart';
 import 'package:day_plan_diary/services/fcm_service.dart';
+import 'package:day_plan_diary/utils/providerInstaller.dart';
 // import 'viewmodels/session_viewmodel.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
+
+  // Hive Initialization
   await Hive.initFlutter();
-  await Firebase.initializeApp();
   await HiveService.initializeHive();
-  final notificationService = NotificationService();
-  await notificationService.initialize();
-  NetworkUtils.initialize();
-  WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase Initialization
   await Firebase.initializeApp();
 
+  // Notification Service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
+  // Network Utils Initialization
+  NetworkUtils.initialize();
+
+  // FCM Service
   final fcmService = FCMService();
   await fcmService.initializeFCM();
+
+  // final firestoreService = FirestoreService();
+  // firestoreService.ensureGooglePlayServices();
+  SecurityProviderUtil.updateSecurityProvider();
+
+  // Run the App
   runApp(const MyApp());
 }
 
@@ -37,30 +52,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MultiProvider(
       providers: [
-        // ChangeNotifierProvider(create: (_) => SessionViewModel()),
+        ChangeNotifierProvider(create: (_) => TodoListViewModel()),
         ChangeNotifierProvider(
-          create: (context) => TodoListViewModel(),
+          create: (context) => TodoItemViewModel(),
         ),
-        ChangeNotifierProvider(
-          create: (context) => TodoItemViewModel()
-          ),
-
-        ChangeNotifierProvider(
-          create: (_) => AuthViewModel()
-          ),
-
-        ChangeNotifierProvider(
-          create: (_) => BaseViewModel(), // Add this line
-        ),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => BaseViewModel()),
       ],
       child: MaterialApp.router(
         scaffoldMessengerKey: SnackbarUtils.messengerKey,
         routerConfig: appRouter,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.white)
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         ),
       ),
     );

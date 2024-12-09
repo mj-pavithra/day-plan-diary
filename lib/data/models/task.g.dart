@@ -27,13 +27,14 @@ class TaskAdapter extends TypeAdapter<Task> {
       completedTime: fields[7] as String,
       isCompleted: fields[8] as bool,
       isVisible: fields[9] as bool,
+      idFirestore: fields[10] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Task obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(8)
       ..write(obj.isCompleted)
       ..writeByte(9)
-      ..write(obj.isVisible);
+      ..write(obj.isVisible)
+      ..writeByte(10)
+      ..write(obj.idFirestore);
   }
 
   @override

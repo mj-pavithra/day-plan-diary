@@ -1,10 +1,12 @@
 import 'package:day_plan_diary/data/models/task.dart';
 import 'package:day_plan_diary/services/firebase_service.dart';
+import 'package:day_plan_diary/services/firestore_service.dart';
 import 'package:day_plan_diary/services/hiveService.dart';
 import 'package:day_plan_diary/services/notification_service.dart';
 import 'package:day_plan_diary/services/session_service.dart';
 import 'package:day_plan_diary/utils/network_utils.dart';
 import 'package:day_plan_diary/utils/snackbar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 // import 'package:day_plan_diary/viewmodels/session_viewmodel.dart';
@@ -15,14 +17,22 @@ import 'base_viewmodel.dart';
 
 class TodoItemViewModel extends BaseViewModel {
 
+  final FirestoreService_firestoreService = FirestoreService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   late final session;
   late final FirebaseService _firebaseService;
   late final HiveService _hiveService;
-  final NotificationService _notificationService = NotificationService();
+  late final FirestoreService _firestoreService;
+  final User? user = FirebaseAuth.instance.currentUser;
+  // final NotificationService _notificationService = NotificationService();
+  
+  final List<Task> _tasks = [];
+  List<Task> get tasks => _tasks;
 
   TodoItemViewModel() {
     _firebaseService = FirebaseService();
-    _hiveService = HiveService();
+    _firestoreService = FirestoreService();
+    _initializeNetworkListener();
     _initializeNetworkListener();
     _initializeSession();
   }
@@ -85,8 +95,6 @@ class TodoItemViewModel extends BaseViewModel {
 Task? task;
   late TextEditingController titleController;
   late TextEditingController dateController;
-  late String taskOwnerEmail;
-  late String taskOwnerId;
   late String timeToComplete;
   late String completedTime;
   @override
@@ -96,8 +104,6 @@ Task? task;
     void initialize(Task task) {
     titleController = TextEditingController(text: task.title);
     dateController = TextEditingController(text: task.date);
-    taskOwnerEmail = task.taskOwnerEmail ?? '';
-    taskOwnerId = task.taskOwnerId;
     timeToComplete = task.timeToComplete;
     completedTime = task.completedTime;
     selectedPriority = task.priority ;
@@ -129,13 +135,7 @@ Task? task;
     dateController.text = newDate;
   }
 
-  void updateTaskOwnerEmail(String newTaskOwnerEmail) {
-    taskOwnerEmail = newTaskOwnerEmail;
-  }
 
-  void updateTaskOwnerId(String newTaskOwnerId) {
-    taskOwnerId = newTaskOwnerId;
-  }
 
   void updateTimeToComplete(String newTimeToComplete) {
     timeToComplete = newTimeToComplete;
@@ -148,13 +148,10 @@ Task? task;
 
   Task getUpdatedTask() {
     return Task(
-      id: task?.id ?? 0,
       title: titleController.text,
       date: dateController.text,
       priority: selectedPriority,
       timeToComplete: timeToComplete,
-      taskOwnerId: taskOwnerId,
-      taskOwnerEmail: taskOwnerEmail,
       completedTime: completedTime,
       isCompleted: isCompleted,
     );
@@ -171,6 +168,8 @@ Task? task;
         return const Color.fromARGB(122, 42, 25, 194);
     }
   }
+
+
 
 
   // Helper function to validate and save a task
@@ -195,45 +194,55 @@ Future<void> saveTask({
 
   try {
     // Fetch user details from the session
-    final userId = await session.getUserId();
-    final userEmail = await session.getUserEmail();
+    final userId = user?.uid?? "testUid";
+    print('User ID is fetched : $userId');
+    final userEmail = _auth.currentUser!.email;
+    print('User Email is fetched : $userEmail');
 
     // Create a new task object
+   id = session.getCounter();
+   print ('Counter befor increment ${session.getCounter()}');
+   session.incrementCounter();
+   print ('Counter is incremented ${session.getCounter()}');
     final task = Task(
       id: id,
       title: title,
       date: date,
       timeToComplete: timeToComplete,
-      taskOwnerId: userId ?? '', // Fallback to empty string if null
-      taskOwnerEmail: userEmail ?? '',
       completedTime: '',
       priority: priority,
       isCompleted: false,
     );
-
-    // Save the task using HiveService
+    
+    
     await _hiveService.addTask(task);
     notifyListeners();
 
     // Schedule a notification
-    final notificationTime = selectedDate.add(const Duration(hours: 9)); // Example: 9 AM on the task date
+
+    // final notificationTime = selectedDate.add(const Duration(hours: 9));
+
     await NotificationService().scheduleNotification(
       title: 'Task Reminder',
       body: 'Don\'t forget: $title',
-      scheduledTime: DateTime.now().add(const Duration(seconds: 1)), // Trigger immediately for demonstration
+      scheduledTime: DateTime.now().add(const Duration(seconds: 5)), 
     );
 
+    await _firestoreService.addTask(FirebaseAuth.instance.currentUser?.uid ?? "testUid", task);
+    
     GoRouter.of(context).go('/home');
     SnackbarUtils.showSnackbar(
       "New task added successfully",
       backgroundColor: Colors.green,
     );
 
+    // todo task list have to be refereshed
     await _backupTaskToFirebase(task);
   } catch (e) {
     SnackbarUtils.showSnackbar('Error saving task: $e', backgroundColor: Colors.red);
     throw Exception('Error saving task: $e');
   }
+  
 }
 
 Future<void> _backupTaskToFirebase(Task task) async {
@@ -246,10 +255,10 @@ Future<void> _backupTaskToFirebase(Task task) async {
 
 
   // Delete task via HiveService
-  Future<void> deleteTask(int taskKey) async {
+  Future<void> deleteTask(int TaskIndex) async {
 
     try {
-      await _hiveService.deleteTask(taskKey);
+      await _hiveService.deleteTask(TaskIndex);
       notifyListeners();
       SnackbarUtils.showSnackbar(
         "Task deleted successfully",
