@@ -13,12 +13,25 @@ class FirestoreService {
   }
 
   Future<List<Task>> getTasks(String userId) async {
-    final taskCollection = _firestore.collection('tasks').doc(userId).collection('userTasks');
+    try{final taskCollection =_firestore.collection('tasks').doc(userId).collection('userTasks');
     final querySnapshot = await taskCollection.get();
+    querySnapshot.docs.forEach((doc) {
+      print('Document data: ${doc.data()}');
+    });
 
     return querySnapshot.docs
         .map((doc) => Task.fromMap(doc.data() ))
-        .toList();
+        .toList();}
+    catch(e){
+      print('error is $e');
+      return [];
+    }
+  }
+  
+  Future<int> getTaskCount(String userId) async {
+    final taskCollection = _firestore.collection('tasks').doc(userId).collection('userTasks');
+    final querySnapshot = await taskCollection.get();
+    return querySnapshot.docs.length;
   }
 
   Future<void> updateTask(String userId, String taskId, Map<String, dynamic> updates) async {

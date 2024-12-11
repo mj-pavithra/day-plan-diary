@@ -12,19 +12,43 @@ class HiveService {
   }
 
   Future<void> addTask(Task task) async {
-    await taskBox?.add(task);
+    try{
+      await taskBox?.add(task);
+      print('Task added to hive');
+      }
+    catch(e){
+      print('Error adding task to hive: $e');
+    }
+  }
+
+  void addAllTasks(List<Task> tasks) {
+    try {
+      taskBox?.clear();
+      taskBox?.addAll(tasks);
+      print('Tasks added to hive');
+    } catch (e) {
+      print('Error adding tasks to hive: $e');
+    }
   }
 
   Future<void> deleteTask(int index) async {
     await taskBox?.deleteAt(index);
   }
 
-
-
   List<Task> getAllTasks() {
-    List<Task> allTasks = taskBox?.values.toList() ?? [];
-    return allTasks;
+    print('Get all tasks is called');
+    try{List<Task> allTasks = taskBox?.values.toList() ?? [];
+    return allTasks;}
+    catch(e){
+      print('Error is $e');
+      return [];
+    }
   }
+
+  int getTaskCount() {
+    return taskBox?.length ?? 0;
+  }
+
 
   int getTaskKey(Task task) {
     final taskIndex = taskBox?.values.toList().indexOf(task) ?? -1;

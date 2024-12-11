@@ -28,7 +28,8 @@ class AuthViewModel extends BaseViewModel {
   }
 //todo: implement login
 Future<void> login(BuildContext context, String email, String password) async {
-  setLoading(); // Set loading state to show progress indicator
+try
+{  setLoading(); // Set loading state to show progress indicator
 
   // try {
     // Perform login and get Firebase User
@@ -43,6 +44,12 @@ Future<void> login(BuildContext context, String email, String password) async {
     print("test layer 4");
     // Navigate to Home
     GoRouter.of(context).go('/home');
+    }
+    catch (e) {
+    SnackbarUtils.showSnackbar("Login failed: ${e.toString()}", backgroundColor: Colors.red);
+    print("Login failed: $e");
+    setIdle();
+  }
 
   // setLoading(); // Reset loading state
   //   } catch (e) {

@@ -84,11 +84,15 @@ class Task {
       'date': date,
       'priority': priority,
       'timeToComplete': timeToComplete,
+      'taskOwnerId': taskOwnerId,
+      'taskOwnerEmail': taskOwnerEmail,
       'completedTime': completedTime,
       'isCompleted': isCompleted,
+      'isVisible': isVisible,
       'idFirestore': idFirestore,
     };
   }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -96,26 +100,28 @@ class Task {
       'date': date,
       'priority': priority,
       'timeToComplete': timeToComplete,
+      'taskOwnerId': taskOwnerId,
+      'taskOwnerEmail': taskOwnerEmail,
       'completedTime': completedTime,
       'isCompleted': isCompleted,
+      'isVisible': isVisible,
       'idFirestore': idFirestore,
     };
   }
-  factory Task.fromMap(Map<String, dynamic> map){
+
+  factory Task.fromMap(Map<String, dynamic> map) {
     return Task(
-      date:map['date'],
-      id: map['taskId'],
-      title: map['title'],
-      priority: map['priority'],
-      timeToComplete: map['timeToComplete'],
-      taskOwnerId: map['taskOwnerId'],
+      id: map['id'] ?? -1, // Default to -1 if not present
+      title: map['title'] ?? '',
+      date: map['date'] ?? '',
+      priority: map['priority'] ?? '',
+      timeToComplete: map['timeToComplete'] ?? '',
+      taskOwnerId: map['taskOwnerId'] ?? '',
       taskOwnerEmail: map['taskOwnerEmail'],
-      completedTime: map['completedTime'],
-      isCompleted: map['isCompleted'],
-      idFirestore: map['idFirestore'],
+      completedTime: map['completedTime'] ?? '',
+      isCompleted: map['isCompleted'] ?? false,
+      isVisible: map['isVisible'] ?? true,
+      idFirestore: map['idFirestore'] ?? '',
     );
-
-    }
-
   }
-
+}

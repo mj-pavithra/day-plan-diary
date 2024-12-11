@@ -1,4 +1,3 @@
-import 'package:day_plan_diary/services/firestore_service.dart';
 import 'package:day_plan_diary/services/notification_service.dart';
 import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
@@ -15,6 +14,8 @@ import 'utils/snackbar.dart';
 import 'viewmodels/auth_viewmodel.dart';
 import 'package:day_plan_diary/services/fcm_service.dart';
 import 'package:day_plan_diary/utils/providerInstaller.dart';
+import 'package:flutter/material.dart';
+import 'package:google_api_availability/google_api_availability.dart';
 // import 'viewmodels/session_viewmodel.dart';
 
 
@@ -43,9 +44,13 @@ void main() async {
   // firestoreService.ensureGooglePlayServices();
   SecurityProviderUtil.updateSecurityProvider();
 
+
   // Run the App
   runApp(const MyApp());
 }
+
+
+//GoogleApiAvailability debugging code ends here
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -30,7 +30,7 @@ class TodoItemViewModel extends BaseViewModel {
   List<Task> get tasks => _tasks;
 
   TodoItemViewModel() {
-    _firebaseService = FirebaseService();
+    // _firebaseService = FirebaseService();
     _firestoreService = FirestoreService();
     _initializeNetworkListener();
     _initializeNetworkListener();
@@ -214,21 +214,20 @@ Future<void> saveTask({
       isCompleted: false,
     );
     
-    
     await _hiveService.addTask(task);
+    await _firestoreService.addTask(userId, task);
     notifyListeners();
 
     // Schedule a notification
-
-    // final notificationTime = selectedDate.add(const Duration(hours: 9));
-
-    await NotificationService().scheduleNotification(
-      title: 'Task Reminder',
-      body: 'Don\'t forget: $title',
-      scheduledTime: DateTime.now().add(const Duration(seconds: 5)), 
-    );
-
-    await _firestoreService.addTask(FirebaseAuth.instance.currentUser?.uid ?? "testUid", task);
+    try{
+      await NotificationService().scheduleNotification(
+        title: 'Task Reminder',
+        body: 'Don\'t forget: $title',
+        scheduledTime: DateTime.now().add(const Duration(seconds: 5)),
+      );
+    }catch(e){
+      print('Error in scheduling notification');
+    }
     
     GoRouter.of(context).go('/home');
     SnackbarUtils.showSnackbar(

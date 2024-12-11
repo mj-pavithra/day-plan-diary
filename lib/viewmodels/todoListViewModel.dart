@@ -18,6 +18,8 @@ class TodoListViewModel extends BaseViewModel {
   final FirestoreService _firestoreService = FirestoreService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  final HiveService _hiveService = HiveService();
+
   TodoListViewModel() {
     // Initialize network listener
     NetworkUtils.initialize();
@@ -44,36 +46,38 @@ class TodoListViewModel extends BaseViewModel {
   Future<List<Task>> get filteredTasks async {
     final String _userId = _auth.currentUser!.uid;
     print('User ID: $_userId');
+    late List<Task> allTasks ;
     
     if (!_networkAvailable) {
       print('Data get from hive');
       HiveService().getAllTasks();
-      print('user email: ${_auth.currentUser!.email.toString()}');
+      allTasks = _hiveService.getAllTasks();
+      
+    } else {
+      int taskCountFirestore = await _firestoreService.getTaskCount(_userId);
+      int taskCountHive = _taskBox.length;
+
+      if (taskCountFirestore!= taskCountHive){
+      print('Data get from firestore');
+      allTasks = await _firestoreService.getTasks(_userId);
+      _hiveService.addAllTasks(allTasks);
+      }
+      else{
+        print('Data get from hive even network is available');
+        allTasks = _hiveService.getAllTasks();
+      }
+        
+    }
+    print('user email: ${_auth.currentUser!.email.toString()}');
       final bool filterByCompletion = isTodoSelected;
       SessionService().setCounter(_taskBox.length);
 
-      return _taskBox.values.where((task) {
+      return allTasks.where((task) {
         print('Current user email: ${_auth.currentUser!.email.toString()} ------- Task Owner email: ${task.taskOwnerEmail}');
-        final bool matchesCompletion = task.isCompleted == filterByCompletion;
+        final bool matchesCompletion = !task.isCompleted == filterByCompletion;
         final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
         return matchesCompletion && matchesPriority;
       }).toList();
-    } else {
-      print('Data get from firestore');
-      try {
-        final List<Task> allTasks = await _firestoreService.getTasks(_userId);
-        final bool filterByCompletion = isTodoSelected;
-        return allTasks.where((task) {
-          print('${task.title} ${task.priority}  ${task.isCompleted} ${task.taskOwnerEmail}');
-          final bool matchesCompletion = task.isCompleted == filterByCompletion;
-          final bool matchesPriority = selectedPriority == 'All' || task.priority == selectedPriority;
-          return matchesCompletion && matchesPriority;
-        }).toList();
-      } catch (e) {
-        print('Error getting tasks: $e');
-        return [];
-      }
-    }
   }
 
   void refreshTaskList() {
