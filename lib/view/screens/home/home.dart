@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:day_plan_diary/services/session_service.dart';
 import 'package:day_plan_diary/view/screens/home/todoBody.dart';
 import 'package:day_plan_diary/view/widgets/greeting.dart';
@@ -38,7 +39,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   const Greeting(),
                   Text(
-                     user.displayName!,
+                    user.displayName!,
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 22,
@@ -54,7 +55,7 @@ class HomePage extends StatelessWidget {
             child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     icon: CircleAvatar(
-                    backgroundImage: NetworkImage(user.photoURL ?? ''),
+                    backgroundImage: CachedNetworkImageProvider(user.photoURL!),
                     radius: 20,
                   ),
                     items: const [

@@ -17,13 +17,14 @@ import 'base_viewmodel.dart';
 
 class TodoItemViewModel extends BaseViewModel {
 
-  final FirestoreService_firestoreService = FirestoreService();
+  // final FirestoreService_firestoreService = FirestoreService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late final session;
-  late final FirebaseService _firebaseService;
+  // late final FirebaseService _firebaseService;
   late final HiveService _hiveService;
   late final FirestoreService _firestoreService;
   final User? user = FirebaseAuth.instance.currentUser;
+  bool _networkAvailable = false;
   // final NotificationService _notificationService = NotificationService();
   
   final List<Task> _tasks = [];
@@ -31,6 +32,7 @@ class TodoItemViewModel extends BaseViewModel {
 
   TodoItemViewModel() {
     // _firebaseService = FirebaseService();
+    _hiveService = HiveService();
     _firestoreService = FirestoreService();
     _initializeNetworkListener();
     _initializeNetworkListener();
@@ -48,47 +50,16 @@ class TodoItemViewModel extends BaseViewModel {
     });
   }
 
-//   Future<void> _backupAllTasks() async {
-//   try {
-//     print("Fetching tasks from local storage...");
-//     final allTasks = _hiveService.getAllTasks();
-//     if (allTasks.isEmpty) {
-//       print("No tasks to backup.");
-//       SnackbarUtils.showSnackbar(
-//         "No tasks to backup",
-//         backgroundColor: Colors.orange,
-//       );
-//       return;
-//     }
-
-//     try {
-//       print("Backing up tasks to Firebase...");
-//       await _firebaseService.backupAllTasks(allTasks);
-//       print("Cloud backup completed successfully.");
-//       SnackbarUtils.showSnackbar(
-//         "Backup completed successfully",
-//         backgroundColor: Colors.green,
-//       );
-//     } catch (e) {
-//       print("Error during Firebase backup: $e");
-//       SnackbarUtils.showSnackbar(
-//         "Error during cloud backup: $e",
-//         backgroundColor: Colors.red,
-//       );
-//     }
-//   } catch (e) {
-//     print("Error fetching tasks from local storage: $e");
-//     SnackbarUtils.showSnackbar(
-//       "Error accessing local tasks: $e",
-//       backgroundColor: Colors.red,
-//     );
-//   }
-// }
-
-
   Future<void> _initializeSession() async {
-    session = await SessionService.getInstance();
+    session = await SessionService.getInstance(); 
+       // Initialize network listener
+    NetworkUtils.initialize();
+    NetworkUtils.onNetworkChange.listen((networkStatus) {
+      _networkAvailable = networkStatus;
+      notifyListeners();
+    });
   }
+
 
   var ListViewModel = TodoListViewModel();
 
@@ -175,18 +146,14 @@ Task? task;
   // Helper function to validate and save a task
 Future<void> saveTask({
   required BuildContext context,
-  required int id,
-  required String title,
-  required String date,
-  required String priority,
-  required String timeToComplete,
+  required Task task,
 }) async {
-  if (title.isEmpty || date.isEmpty || priority == "Select Priority") {
+  if (task.title.isEmpty || task.date.isEmpty || task.priority == "Select Priority") {
     SnackbarUtils.showSnackbar('Please fill all fields', backgroundColor: Colors.red);
     throw Exception('Please fill all fields');
   }
 
-  DateTime selectedDate = DateTime.parse(date);
+  DateTime selectedDate = DateTime.parse(task.date);
   if (selectedDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
     SnackbarUtils.showSnackbar('Please select a valid date', backgroundColor: Colors.red);
     throw Exception('Please select a valid date');
@@ -194,83 +161,98 @@ Future<void> saveTask({
 
   try {
     // Fetch user details from the session
-    final userId = user?.uid?? "testUid";
-    print('User ID is fetched : $userId');
+    final userId = user?.uid ?? "testUid";
+    print('User ID is fetched: $userId');
     final userEmail = _auth.currentUser!.email;
-    print('User Email is fetched : $userEmail');
+    print('User Email is fetched: $userEmail');
 
-    // Create a new task object
-   id = session.getCounter();
-   print ('Counter befor increment ${session.getCounter()}');
-   session.incrementCounter();
-   print ('Counter is incremented ${session.getCounter()}');
-    final task = Task(
-      id: id,
-      title: title,
-      date: date,
-      timeToComplete: timeToComplete,
-      completedTime: '',
-      priority: priority,
-      isCompleted: false,
-    );
-    
-    await _hiveService.addTask(task);
-    await _firestoreService.addTask(userId, task);
+    // Increment counter for task ID
+    final id = session.getCounter() + 1;
+    print('Counter before increment: ${session.getCounter()}');
+    session.incrementCounter();
+    print('Counter is incremented: ${session.getCounter()}');
+
+    // Create a new task with the incremented ID
+    final newTask = task.copyWith(id: id);
+  if(_networkAvailable){
+    await _hiveService.addTask(newTask);
+    await _firestoreService.addTask(userId, newTask);
+  }
+  else{
+    try{
+      await _hiveService.addTask(newTask);
+      }
+    catch(e){
+      print('Error saving task to hive: $e');
+      throw Exception('Error saving task: $e');
+    }
+  }
+
     notifyListeners();
 
     // Schedule a notification
-    try{
+    try {
       await NotificationService().scheduleNotification(
         title: 'Task Reminder',
-        body: 'Don\'t forget: $title',
+        body: 'Don\'t forget: ${task.title}',
         scheduledTime: DateTime.now().add(const Duration(seconds: 5)),
       );
-    }catch(e){
-      print('Error in scheduling notification');
+    } catch (e) {
+      print('Error in scheduling notification: $e');
     }
-    
+
     GoRouter.of(context).go('/home');
     SnackbarUtils.showSnackbar(
       "New task added successfully",
       backgroundColor: Colors.green,
     );
 
-    // todo task list have to be refereshed
-    await _backupTaskToFirebase(task);
+    // Backup task to Firebase realtime database
+    // await _backupTaskToFirebase(newTask);
   } catch (e) {
     SnackbarUtils.showSnackbar('Error saving task: $e', backgroundColor: Colors.red);
     throw Exception('Error saving task: $e');
   }
-  
 }
 
-Future<void> _backupTaskToFirebase(Task task) async {
-    try {
-      await _firebaseService.backupTask(task);
-    } catch (e) {
-      print('Error backing up task to Firebase: $e');
-    }
-  }
+
+// Future<void> _backupTaskToFirebase(Task task) async {
+//     try {
+//       await _firebaseService.backupTask(task);
+//     } catch (e) {
+//       print('Error backing up task to Firebase: $e');
+//     }
+//   }
 
 
   // Delete task via HiveService
-  Future<void> deleteTask(int TaskIndex) async {
-
-    try {
-      await _hiveService.deleteTask(TaskIndex);
+  Future<void> deleteTask(Task task, int index) async {
+    final idFirestore = task.idFirestore;
+    final userId = user?.uid ?? "";
+      try{
+        await _hiveService.deleteTask(index);
+        print('Task deleted from hive');
+        }
+      catch(e){
+        print('Error deleting task from hive: $e');
+        throw Exception('Error deleting task: $e');
+      }
+      try{
+        await _firestoreService.deleteTask(userId, idFirestore);
+        print('Task deleted from firestore');
+        }
+      catch(e){
+        print('Error deleting task from firestore: $e');
+        throw Exception('Error deleting task: $e');
+      }
       notifyListeners();
       SnackbarUtils.showSnackbar(
         "Task deleted successfully",
         backgroundColor: Colors.red,
       );
-    } catch (e) {
-      throw Exception('Error deleting task: $e');
-    }
   }
     // Confirms task deletion - displays a confirmation dialog
-  Future <bool> confirmDelete (
-      BuildContext context,  dynamic taskKey) async{
-    
+  Future <bool> confirmDelete (BuildContext context,  Task task, int index) async{
     return await showDialog <bool>(
 
       context: context,
@@ -286,7 +268,7 @@ Future<void> _backupTaskToFirebase(Task task) async {
             TextButton(
               onPressed: ()  {
                 Navigator.pop(context, true);
-              deleteTask(taskKey);
+              deleteTask(task, index);
               },
 
               child: const Text("Delete"),
@@ -328,10 +310,17 @@ Future<void> _backupTaskToFirebase(Task task) async {
     );
   }
   Future<void> updateTask(Task updatedTask) async {
-    int taskId = HiveService().getTaskKey(updatedTask);
+    int? taskId = HiveService().getTaskKey(updatedTask);
     print("Title: ${updatedTask.title} Index: $taskId updated");
-    try {await HiveService().updateTask(updatedTask);}
-    catch(e) {throw Exception('Error updating task: $e');}
+    String userId = _auth.currentUser!.uid;
+    String taskKey = updatedTask.idFirestore;
+    try {
+      await _firestoreService.updateTask(userId, taskKey, updatedTask.toMap());
+      await HiveService().updateTask(updatedTask);
+      }
+    catch(e) {
+      throw Exception('Error updating task: $e');
+      }
     notifyListeners();
   }
 

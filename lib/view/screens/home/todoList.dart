@@ -58,9 +58,9 @@ Widget build(BuildContext context) {
                         return false; // Prevent dismissal
                       } else if (direction == DismissDirection.endToStart) {
                         final confirmDelete =
-                            await taskViewModel.confirmDelete(context, taskKey);
+                            await taskViewModel.confirmDelete(context, task, index);
                         if (confirmDelete) {
-                          viewModel.deleteTask(context, taskKey);
+                          viewModel.deleteTask(context, task);
                         }
                         return false; // Prevent dismissal
                       }
@@ -78,7 +78,7 @@ Widget build(BuildContext context) {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: const Icon(Icons.delete, color: Colors.white),
                     ),
-                    child: ToDoItem(viewModel: taskViewModel, taskKey: taskKey),
+                    child: ToDoItem(viewModel: taskViewModel, taskKey: taskKey ?? 0),
                   ),
                 );
               }),

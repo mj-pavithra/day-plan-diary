@@ -1,6 +1,6 @@
+import 'package:day_plan_diary/data/models/task.dart';
 import 'package:flutter/material.dart';
 import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
-import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:day_plan_diary/utils/strings.dart';
@@ -9,7 +9,7 @@ class CreateTaskPage extends StatelessWidget {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController timeController = TextEditingController();
-  TimeOfDay selectedTime = TimeOfDay.now();
+  late TimeOfDay selectedTime = TimeOfDay.now();
   String selectedPriority = 'Select Priority';
 
   CreateTaskPage({super.key});
@@ -28,7 +28,6 @@ class CreateTaskPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<TodoItemViewModel>(context);
-    final id = Provider.of<TodoListViewModel>(context).taskcount + 1;
 
     return Scaffold(
       appBar: AppBar(
@@ -78,7 +77,6 @@ class CreateTaskPage extends StatelessWidget {
               const SizedBox(height: 8.0),
               Row(
                 children: [
-                  // Option 01: Clock Dial
                   Expanded(
                     flex: 1,
                     child: IconButton(
@@ -86,20 +84,17 @@ class CreateTaskPage extends StatelessWidget {
                       onPressed: () => _selectTime(context),
                     ),
                   ),
-                  // Option 02: Manual Input (Hours & Minutes)
                   Expanded(
                     flex: 2,
-                    child: 
-                        TextField(
-                          controller: timeController,
-                          decoration: const InputDecoration(
-                            labelText: "Hours (with A.M./P.M.)",
-                            border: OutlineInputBorder(),
-                          ),
-                          readOnly: true, // Prevent manual editing
-                          onTap: () => _selectTime(context), // Open clock dialog
-                        ),
-                        
+                    child: TextField(
+                      controller: timeController,
+                      decoration: const InputDecoration(
+                        labelText: "Hours (with A.M./P.M.)",
+                        border: OutlineInputBorder(),
+                      ),
+                      readOnly: true, // Prevent manual editing
+                      onTap: () => _selectTime(context), // Open clock dialog
+                    ),
                   ),
                 ],
               ),
@@ -107,7 +102,9 @@ class CreateTaskPage extends StatelessWidget {
               DropdownButtonFormField<String>(
                 value: selectedPriority,
                 onChanged: (newValue) {
-                  selectedPriority = newValue!;
+                  if (newValue != null) {
+                    selectedPriority = newValue;
+                  }
                 },
                 items: const [
                   DropdownMenuItem(value: selectPriority, child: Text(selectPriority)),
@@ -122,13 +119,30 @@ class CreateTaskPage extends StatelessWidget {
               const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
-                  viewModel.saveTask(
-                    context: context,
-                    id: id,
+                  if (titleController.text.isEmpty ||
+                      dateController.text.isEmpty ||
+                      selectedPriority == 'Select Priority') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please fill all fields'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
+                  Task task = Task(
+                    id: -1, // Temporary ID, to be replaced later
                     title: titleController.text,
                     date: dateController.text,
-                    timeToComplete: timeController.text,
                     priority: selectedPriority,
+                    timeToComplete: timeController.text,
+                    isCompleted: false,
+                  );
+
+                  viewModel.saveTask(
+                    context: context,
+                    task: task,
                   );
                 },
                 style: ElevatedButton.styleFrom(

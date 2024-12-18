@@ -7,10 +7,19 @@ import 'package:google_api_availability/google_api_availability.dart';
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> addTask(String userId, Task task) async {
-    final taskCollection = _firestore.collection('tasks').doc(userId).collection('userTasks');
-    await taskCollection.add(task.toMap());
-  }
+Future<void> addTask(String userId, Task task) async {
+  final taskCollection = _firestore.collection('tasks').doc(userId).collection('userTasks');
+  
+  // Create a document reference to get the auto-generated document ID
+  final docRef = taskCollection.doc();
+
+  // Add the task data with the document ID included
+  await docRef.set({
+    ...task.toMap(), 
+    'idFirestore': docRef.id, // Include the document ID as a field
+  });
+}
+
 
   Future<List<Task>> getTasks(String userId) async {
     try{final taskCollection =_firestore.collection('tasks').doc(userId).collection('userTasks');
@@ -27,7 +36,7 @@ class FirestoreService {
       return [];
     }
   }
-  
+
   Future<int> getTaskCount(String userId) async {
     final taskCollection = _firestore.collection('tasks').doc(userId).collection('userTasks');
     final querySnapshot = await taskCollection.get();

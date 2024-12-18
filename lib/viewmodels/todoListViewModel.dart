@@ -12,13 +12,14 @@ import 'base_viewmodel.dart';
 
 class TodoListViewModel extends BaseViewModel {
   final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
-  bool _networkAvailable = true; // Not final, so it can be updated dynamically
+  bool _networkAvailable = false; // Not final, so it can be updated dynamically
   bool get networkAvailable => _networkAvailable;
 
   final FirestoreService _firestoreService = FirestoreService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final HiveService _hiveService = HiveService();
+
 
   TodoListViewModel() {
     // Initialize network listener
@@ -50,17 +51,21 @@ class TodoListViewModel extends BaseViewModel {
     
     if (!_networkAvailable) {
       print('Data get from hive');
-      HiveService().getAllTasks();
+      await HiveService().getAllTasks();
       allTasks = _hiveService.getAllTasks();
       
     } else {
       int taskCountFirestore = await _firestoreService.getTaskCount(_userId);
+      print('Task count from firestore: $taskCountFirestore');
       int taskCountHive = _taskBox.length;
+      print('Task count from hive: $taskCountHive');
 
       if (taskCountFirestore!= taskCountHive){
+      
       print('Data get from firestore');
-      allTasks = await _firestoreService.getTasks(_userId);
-      _hiveService.addAllTasks(allTasks);
+      // allTasks = await _firestoreService.getTasks(_userId);
+      // _hiveService.addAllTasks(allTasks);
+      // HiveService.syncOfflineTasks();
       }
       else{
         print('Data get from hive even network is available');

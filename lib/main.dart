@@ -13,21 +13,20 @@ import 'services/hiveService.dart';
 import 'utils/snackbar.dart';
 import 'viewmodels/auth_viewmodel.dart';
 import 'package:day_plan_diary/services/fcm_service.dart';
-import 'package:day_plan_diary/utils/providerInstaller.dart';
-import 'package:flutter/material.dart';
-import 'package:google_api_availability/google_api_availability.dart';
+// import 'package:day_plan_diary/utils/providerInstaller.dart';
 // import 'viewmodels/session_viewmodel.dart';
 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   // Hive Initialization
   await Hive.initFlutter();
-  await HiveService.initializeHive();
+  // final hiveService = HiveService();
+  await HiveService().initializeHive();
 
   // Firebase Initialization
-  await Firebase.initializeApp();
 
   // Notification Service
   final notificationService = NotificationService();
@@ -42,7 +41,7 @@ void main() async {
 
   // final firestoreService = FirestoreService();
   // firestoreService.ensureGooglePlayServices();
-  SecurityProviderUtil.updateSecurityProvider();
+  // SecurityProviderUtil.updateSecurityProvider();
 
 
   // Run the App

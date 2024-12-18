@@ -126,11 +126,10 @@ class _LoginViewState extends State<LoginView> {
                                 catch (e) {
                                   print("test layer 2");
                                   SnackbarUtils.showSnackbar(e.toString(), backgroundColor: Colors.red);
-              authViewModel.state == ViewState.Idle;
+                                  authViewModel.state == ViewState.Idle;
                                 }
                                 finally{
-
-              authViewModel.state == ViewState.Idle;
+                                authViewModel.state == ViewState.Idle;
                                 }
                               // User? user = _auth.currentUser;
                               print("test layer 1");

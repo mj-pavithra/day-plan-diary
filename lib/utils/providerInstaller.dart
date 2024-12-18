@@ -6,7 +6,7 @@ class SecurityProviderUtil {
   // Method to call native code to update security provider
   static Future<void> updateSecurityProvider() async {
     try {
-      await platform.invokeMethod('updateSecurityProvider');
+       platform.invokeMethod('updateSecurityProvider');
     } on PlatformException catch (e) {
       print("Failed to update provider: ${e.message}");
     }
