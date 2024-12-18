@@ -1,4 +1,4 @@
-package com.example.day_plan_diary
+package com.wisesoftlab.dpd
 
 import io.flutter.embedding.android.FlutterActivity
 

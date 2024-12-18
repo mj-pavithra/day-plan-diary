@@ -1,0 +1,4 @@
+<resources>
+    <!-- Firebase Configuration -->
+    <string name="default_web_client_id">your_web_client_id_here</string>
+</resources>

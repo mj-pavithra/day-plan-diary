@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "205897039737",
+    "firebase_url": "https://day-plan-diary-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "day-plan-diary",
+    "storage_bucket": "day-plan-diary.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205897039737:android:100baf12e2f90d149db9a8",
+        "android_client_info": {
+          "package_name": "com.wisesoftlab.dpd"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "205897039737-eo1ame95c2solcs02tg7s8gfgce9fiea.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wisesoftlab.dpd",
+            "certificate_hash": "a4c6a93615796caa149341e3ac4bc1cfe7aff6c1"
+          }
+        },
+        {
+          "client_id": "205897039737-0nrqb628v6gvj4b1jkm3nvac8rqgnl55.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB01bu2Km94Ss6su9UCkTc6abjWWIDCUjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "205897039737-0nrqb628v6gvj4b1jkm3nvac8rqgnl55.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

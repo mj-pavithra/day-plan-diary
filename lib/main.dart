@@ -1,63 +1,76 @@
-import 'package:day_plan_diary/Models/task.dart';
-import 'package:day_plan_diary/ViewModels/todoBodyViewModel.dart';
-import 'package:day_plan_diary/ViewModels/todoItemViewModel.dart';
-import 'package:day_plan_diary/ViewModels/todoListViewModel.dart';
-import 'package:day_plan_diary/ViewModels/updateTaskViewModel.dart';
+import 'package:day_plan_diary/services/notification_service.dart';
+import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
+import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
+import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
+import 'package:day_plan_diary/utils/network_utils.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
-import 'Services/hiveService.dart';
-import 'Utils/snackbar.dart';
-import 'ViewModels/HomePageViewModel.dart';
 import 'routes/appRouter.dart';
+import 'services/hiveService.dart';
+import 'utils/snackbar.dart';
+import 'viewmodels/auth_viewmodel.dart';
+import 'package:day_plan_diary/services/fcm_service.dart';
+// import 'package:day_plan_diary/utils/providerInstaller.dart';
+// import 'viewmodels/session_viewmodel.dart';
 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  // Hive Initialization
   await Hive.initFlutter();
-  // Hive.registerAdapter(TaskAdapter());
-  await HiveService.initializeHive();
+  // final hiveService = HiveService();
+  await HiveService().initializeHive();
+
+  // Firebase Initialization
+
+  // Notification Service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
+  // Network Utils Initialization
+  NetworkUtils.initialize();
+
+  // FCM Service
+  final fcmService = FCMService();
+  await fcmService.initializeFCM();
+
+  // final firestoreService = FirestoreService();
+  // firestoreService.ensureGooglePlayServices();
+  // SecurityProviderUtil.updateSecurityProvider();
+
+
+  // Run the App
   runApp(const MyApp());
 }
+
+
+//GoogleApiAvailability debugging code ends here
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-
-
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => TodoListViewModel()),
         ChangeNotifierProvider(
-          create: (context) => HomePageViewModel(),
+          create: (context) => TodoItemViewModel(),
         ),
-        ChangeNotifierProvider(
-          create: (context) => TodoBodyViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => TodoListViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => TodoItemViewModel(
-            title: 'Sample Title',
-            date: DateTime.now().toIso8601String(),
-            priority: 'High',
-            isCompleted: false,
-          )
-          ),
-          ChangeNotifierProvider(
-          create: (context) => UpdateTaskViewModel(
-            task: Task(title: "title", date: "date", priority: "priority"), // Replace 'someTask' with the actual task object
-            taskId: 1, // Replace 'someTaskId' with the actual task ID
-            
-          )
-          ),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => BaseViewModel()),
       ],
       child: MaterialApp.router(
         scaffoldMessengerKey: SnackbarUtils.messengerKey,
         routerConfig: appRouter,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+        ),
       ),
     );
   }
