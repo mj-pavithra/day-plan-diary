@@ -174,19 +174,19 @@ Future<void> saveTask({
 
     // Create a new task with the incremented ID
     final newTask = task.copyWith(id: id);
-  if(_networkAvailable){
+
     await _hiveService.addTask(newTask);
-    await _firestoreService.addTask(userId, newTask);
-  }
-  else{
-    try{
-      await _hiveService.addTask(newTask);
+    
+    if (_networkAvailable) {
+      try {
+        await _firestoreService.addTask(user?.uid ?? '', newTask);
+        SnackbarUtils.showSnackbar("Task saved and synced online", backgroundColor: Colors.green);
+      } catch (e) {
+        SnackbarUtils.showSnackbar("Task saved locally, sync failed: $e", backgroundColor: Colors.orange);
       }
-    catch(e){
-      print('Error saving task to hive: $e');
-      throw Exception('Error saving task: $e');
+    } else {
+      SnackbarUtils.showSnackbar("Task saved locally, will sync when online", backgroundColor: Colors.orange);
     }
-  }
 
     notifyListeners();
 
@@ -237,6 +237,7 @@ Future<void> saveTask({
         print('Error deleting task from hive: $e');
         throw Exception('Error deleting task: $e');
       }
+      if (_networkAvailable) {
       try{
         await _firestoreService.deleteTask(userId, idFirestore);
         print('Task deleted from firestore');
@@ -244,7 +245,7 @@ Future<void> saveTask({
       catch(e){
         print('Error deleting task from firestore: $e');
         throw Exception('Error deleting task: $e');
-      }
+      }}
       notifyListeners();
       SnackbarUtils.showSnackbar(
         "Task deleted successfully",
