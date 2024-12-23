@@ -23,8 +23,12 @@ void main() async {
 
   // Hive Initialization
   await Hive.initFlutter();
-  // final hiveService = HiveService();
-  await HiveService().initializeHive();
+  HiveService hiveService = HiveService();
+  try {
+    await hiveService.initializeHive();
+  } catch (e) {
+    print('Failed to initialize Hive: $e');
+  }
 
   // Firebase Initialization
 

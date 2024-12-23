@@ -6,33 +6,38 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class HiveService {
-   late Box<Task> taskBox;
-   late Box<Task> offlineSaveBox;
-   late Box<Task> offlineUpdateBox;
-   late Box<int> offlineDeleteBox;
-   final Connectivity _connectivity = Connectivity();
+  late Box<Task> taskBox;
+  late Box<Task> offlineSaveBox;
+  late Box<Task> offlineUpdateBox;
+  late Box<int> offlineDeleteBox;
+  final Connectivity _connectivity = Connectivity();
   late final FirestoreService _firestoreService;
   // final FirebaseAuth _auth = FirebaseAuth.instance;
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
 
 
   Future<void> initializeHive() async {
-    if (!Hive.isAdapterRegistered(1)) {
-      Hive.registerAdapter(TaskAdapter()); // Register adapter only if not already registered
+    print('Initializing Hive...');
+    // Register adapters if not already registered
+    if (!Hive.isAdapterRegistered(TaskAdapter().typeId)) {
+      Hive.registerAdapter(TaskAdapter());
+      print('TaskAdapter registered');
     }
-    taskBox = await Hive.openBox<Task>('tasksBox');
-    offlineSaveBox = await Hive.openBox<Task>('offlineSaveBox');
-    offlineUpdateBox = await Hive.openBox<Task>('offlineUpdateBox');
-    offlineDeleteBox = await Hive.openBox<int>('offlineDeleteBox');
-    
-    // Start listening for connectivity changes
-    _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
-      if (result != ConnectivityResult.none) {
-        syncOfflineTasks();
-      }
-    });
+
+    try {
+      taskBox = await Hive.openBox<Task>('tasksBox');
+      print('taskBox initialized');
+      offlineSaveBox = await Hive.openBox<Task>('offlineSaveBox');
+      offlineUpdateBox = await Hive.openBox<Task>('offlineUpdateBox');
+      offlineDeleteBox = await Hive.openBox<int>('offlineDeleteBox');
+      print('All boxes initialized successfully');
+    } catch (e) {
+      print('Error initializing Hive boxes: $e');
+      rethrow; // Ensure the error propagates if needed for debugging
+    }
   }
+
 
   Future<void> addTask(Task task) async {
     if (await _isConnected()) {
@@ -48,20 +53,21 @@ class HiveService {
       print('Task added to offline save queue');
     }
   }
-  // void addAllTasks(List<Task> tasks) {
-  //   try {
-  //     taskBox.clear();
-  //     try{
-  //       taskBox.addAll(tasks);
-  //     print('Tasks added to hive');
-  //     }
-  //     catch(e){
-  //       print('Error in adding all tasks to hive is $e');
-  //     }
-  //   } catch (e) {
-  //     print('Error adding tasks to hive: $e');
-  //   }
-  // }
+  void addAllTasks(List<Task> tasks) {
+    print('Add all tasks is called');
+    try {
+      taskBox.clear();
+      try{
+        taskBox.addAll(tasks);
+      print('Tasks added to hive');
+      }
+      catch(e){
+        print('Error in adding all tasks to hive is $e');
+      }
+    } catch (e) {
+      print('Error adding tasks to hive: $e');
+    }
+  }
   Future<void> updateTask(Task updatedTask) async {
     final taskId = getTaskKey(updatedTask);
     if (taskId == null) {
@@ -151,13 +157,22 @@ class HiveService {
 
   List<Task> getAllTasks() {
     print('Get all tasks is called');
+    
+    if (!Hive.isBoxOpen('tasksBox') || taskBox.isEmpty) {
+      print('Error: taskBox is not open or initialized.');
+      return [];
+    }
+    
     try {
+      print('try to get all tasks');
       return taskBox.values.toList();
     } catch (e) {
       print('Error retrieving tasks: $e');
       return [];
     }
   }
+
+
 
   int getTaskCount() {
     return taskBox.length;

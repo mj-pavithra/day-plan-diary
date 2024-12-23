@@ -11,8 +11,8 @@ import '../utils/snackbar.dart';
 import 'base_viewmodel.dart';
 
 class TodoListViewModel extends BaseViewModel {
-  final Box<Task> _taskBox = Hive.box<Task>('tasksBox');
-  bool _networkAvailable = false; // Not final, so it can be updated dynamically
+  late final Box<Task> _taskBox ;
+  bool _networkAvailable = true; // Not final, so it can be updated dynamically
   bool get networkAvailable => _networkAvailable;
 
   final FirestoreService _firestoreService = FirestoreService();
@@ -22,13 +22,21 @@ class TodoListViewModel extends BaseViewModel {
 
 
   TodoListViewModel() {
+    // Initialize the Hive box
+    
+  _initializeTaskBox();
     // Initialize network listener
     NetworkUtils.initialize();
     NetworkUtils.onNetworkChange.listen((networkStatus) {
       _networkAvailable = networkStatus;
       notifyListeners(); // Notify listeners to update the UI
     });
+
   }
+
+  Future<void> _initializeTaskBox() async {
+  _taskBox = await Hive.openBox<Task>('tasksBox');
+}
 
   void toggleTodoSelection(bool isTodo) {
     isTodoSelected = isTodo;
@@ -45,33 +53,36 @@ class TodoListViewModel extends BaseViewModel {
   }
 
   Future<List<Task>> get filteredTasks async {
-    final String _userId = _auth.currentUser!.uid;
-    print('User ID: $_userId');
+      if (!Hive.isBoxOpen('tasksBox')) {
+    _taskBox = await Hive.openBox<Task>('tasksBox');
+  }
+    final String userId = _auth.currentUser!.uid;
+    print('User ID: $userId');
     late List<Task> allTasks ;
+    print ('Network available: $_networkAvailable');
     
-    if (!_networkAvailable) {
-      print('Data get from hive');
-      await HiveService().getAllTasks();
-      allTasks = _hiveService.getAllTasks();
-      
-    } else {
-      int taskCountFirestore = await _firestoreService.getTaskCount(_userId);
+    if (_networkAvailable) {
+      int taskCountFirestore = await _firestoreService.getTaskCount(userId);
       print('Task count from firestore: $taskCountFirestore');
       int taskCountHive = _taskBox.length;
       print('Task count from hive: $taskCountHive');
 
       if (taskCountFirestore!= taskCountHive){
-      
       print('Data get from firestore');
-      // allTasks = await _firestoreService.getTasks(_userId);
-      // _hiveService.addAllTasks(allTasks);
-      // HiveService.syncOfflineTasks();
+      allTasks = await _firestoreService.getTasks(userId);
+      _hiveService.addAllTasks(allTasks);
       }
       else{
         print('Data get from hive even network is available');
         allTasks = _hiveService.getAllTasks();
       }
-        
+      
+      
+    } else {
+        print('Data get from hive in "filteredTasks"  $networkAvailable');
+      HiveService().getAllTasks();
+      allTasks = _hiveService.getAllTasks();
+      
     }
     print('user email: ${_auth.currentUser!.email.toString()}');
       final bool filterByCompletion = isTodoSelected;
