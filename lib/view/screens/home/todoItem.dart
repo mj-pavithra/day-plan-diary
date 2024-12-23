@@ -7,16 +7,20 @@ import 'package:go_router/go_router.dart';
 class ToDoItem extends StatelessWidget {
   final TodoItemViewModel viewModel;
   final int taskKey;
+  final bool isTodoSelected;
 
-  const ToDoItem({super.key, required this.viewModel, required this.taskKey});
+  const ToDoItem({
+    super.key, 
+    required this.viewModel, 
+    required this.taskKey,
+    required this.isTodoSelected,
+    });
 
 
 
   @override
   Widget build(BuildContext context) {
 
-    final todoListViewModel = TodoListViewModel();
-    bool isTodoSelected = todoListViewModel.isTodoSelected;
     final testText = viewModel.task!.title.toString();
 print(isTodoSelected) ;
 

@@ -60,11 +60,11 @@ class TodoListViewModel extends BaseViewModel {
     print('User ID: $userId');
     late List<Task> allTasks ;
     print ('Network available: $_networkAvailable');
+      int taskCountHive = _taskBox.length;
     
     if (_networkAvailable) {
       int taskCountFirestore = await _firestoreService.getTaskCount(userId);
       print('Task count from firestore: $taskCountFirestore');
-      int taskCountHive = _taskBox.length;
       print('Task count from hive: $taskCountHive');
 
       if (taskCountFirestore!= taskCountHive){
@@ -79,8 +79,8 @@ class TodoListViewModel extends BaseViewModel {
       
       
     } else {
+      print('Task count from hive: $taskCountHive');
         print('Data get from hive in "filteredTasks"  $networkAvailable');
-      HiveService().getAllTasks();
       allTasks = _hiveService.getAllTasks();
       
     }

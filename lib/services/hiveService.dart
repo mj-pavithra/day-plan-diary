@@ -15,6 +15,13 @@ class HiveService {
   // final FirebaseAuth _auth = FirebaseAuth.instance;
   final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
+  late final Future<void> _initHiveFuture;
+    HiveService() {
+    _initHiveFuture = initializeHive();
+  }
+  Future<void> ensureInitialized() async {
+    await _initHiveFuture;
+  }
 
 
   Future<void> initializeHive() async {
@@ -37,6 +44,8 @@ class HiveService {
       rethrow; // Ensure the error propagates if needed for debugging
     }
   }
+
+
 
 
   Future<void> addTask(Task task) async {
@@ -175,18 +184,38 @@ class HiveService {
 
 
   int getTaskCount() {
-    return taskBox.length;
+    if (!Hive.isBoxOpen('tasksBox')) {
+      print('Error: taskBox is not open or initialized.');
+      return 0;
+    }
+    try {
+      return taskBox.length;
+    } catch (e) {
+      print('Error retrieving task count: $e');
+      return 0;
+    }
   }
 
-  int? getTaskKey(Task task) {
-    try {
+int? getTaskKey(Task task) {
+  try {
+    // Ensure Hive is initialized
+    ensureInitialized().then((_) {
+      if (!Hive.isBoxOpen('tasksBox')) {
+        print('Error: taskBox is not open.');
+        return null;
+      }
+
       final taskIndex = taskBox.values.toList().indexOf(task);
       if (taskIndex != -1) {
         return taskBox.keyAt(taskIndex) as int?;
       }
-    } catch (e) {
-      print('Error retrieving task key: $e');
-    }
-    return null;
+    }).catchError((e) {
+      print('Error during Hive initialization: $e');
+    });
+  } catch (e) {
+    print('Error retrieving task key is: $e');
   }
+  return null;
+}
+
 }

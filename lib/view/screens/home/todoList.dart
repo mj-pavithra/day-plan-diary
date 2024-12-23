@@ -78,7 +78,7 @@ Widget build(BuildContext context) {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: const Icon(Icons.delete, color: Colors.white),
                     ),
-                    child: ToDoItem(viewModel: taskViewModel, taskKey: taskKey ?? 0),
+                    child: ToDoItem(viewModel: taskViewModel, taskKey: taskKey ?? 0, isTodoSelected: isTodoSelected),
                   ),
                 );
               }),
