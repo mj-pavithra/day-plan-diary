@@ -1,8 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:day_plan_diary/services/session_service.dart';
 import 'package:day_plan_diary/view/screens/home/todoBody.dart';
 import 'package:day_plan_diary/view/widgets/greeting.dart';
-// import 'package:day_plan_diary/viewmodels/auth_viewmodel.dart';
+import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:day_plan_diary/viewmodels/base_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -10,23 +9,17 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatelessWidget {
-  final bool isTodoSelected;
 
-  const HomePage({
-    super.key,
-    required this.isTodoSelected
-  });
 
   @override
   Widget build(BuildContext context) {
-    // final authViewModel = Provider.of<AuthViewModel>(context);
+    final todoListViewModel = Provider.of<TodoListViewModel>(context);
     final BaseViewModel baseViewModel = Provider.of<BaseViewModel>(context);
 
     User user = FirebaseAuth.instance.currentUser!;
 
     bool isUserLoggedIn = baseViewModel.isTodoSelected;
     print('*********** $isUserLoggedIn *****');
-    print('++++++ $isTodoSelected ++++++');
     
     return Scaffold(
       backgroundColor: Colors.white,
@@ -84,7 +77,7 @@ class HomePage extends StatelessWidget {
       ),
       body: const ToDoBody(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: isTodoSelected
+      floatingActionButton: todoListViewModel.isTodoSelected
         ? FloatingActionButton(
             onPressed: () => context.go('/newtask'),
             child: const Icon(Icons.add),

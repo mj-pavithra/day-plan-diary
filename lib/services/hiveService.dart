@@ -16,12 +16,20 @@ class HiveService {
   final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
   late final Future<void> _initHiveFuture;
-    HiveService() {
+
+  HiveService._privateConstructor(){
     _initHiveFuture = initializeHive();
   }
-  Future<void> ensureInitialized() async {
+
+  static final HiveService _instance =HiveService._privateConstructor();
+
+  factory HiveService(){
+    return _instance;
+  }
+  Future<void> ensureInitialized() async{
     await _initHiveFuture;
   }
+
 
 
   Future<void> initializeHive() async {

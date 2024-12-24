@@ -29,7 +29,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/home',
       builder: (context, state) =>  HomePage(
-                isTodoSelected: todoListViewModel.isTodoSelected,
                 ),
     ),
     GoRoute(

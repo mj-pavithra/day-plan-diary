@@ -5,7 +5,7 @@ import 'package:day_plan_diary/utils/network_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
+import 'package:synchronized/synchronized.dart';
 import '../data/models/task.dart';
 import '../utils/snackbar.dart';
 import 'base_viewmodel.dart';
@@ -20,6 +20,10 @@ class TodoListViewModel extends BaseViewModel {
 
   final HiveService _hiveService = HiveService();
 
+
+  final Lock _lock = Lock(); // Create a lock instance
+
+  // late Box<Task> _taskBox;
 
   TodoListViewModel() {
     // Initialize the Hive box
@@ -81,6 +85,7 @@ class TodoListViewModel extends BaseViewModel {
     } else {
       print('Task count from hive: $taskCountHive');
         print('Data get from hive in "filteredTasks"  $networkAvailable');
+
       allTasks = _hiveService.getAllTasks();
       
     }
