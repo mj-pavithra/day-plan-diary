@@ -1,6 +1,5 @@
 import 'package:day_plan_diary/helpers/dateFormatter.dart';
 import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
-import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

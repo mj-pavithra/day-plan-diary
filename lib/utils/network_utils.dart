@@ -12,4 +12,10 @@ class NetworkUtils {
       _networkController.add(result != ConnectivityResult.none);
     });
   }
+    /// Function to dynamically check network availability
+  static Future<bool> isNetworkAvailable() async {
+    final ConnectivityResult result = await _connectivity.checkConnectivity();
+    return result != ConnectivityResult.none;
+  }
+
 }

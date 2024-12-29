@@ -4,6 +4,8 @@ import 'package:day_plan_diary/viewmodels/todoListViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:day_plan_diary/data/models/task.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:day_plan_diary/view/screens/home/TodoItemShimmer.dart';
 
 import 'todoItem.dart';
 
@@ -25,7 +27,7 @@ Widget build(BuildContext context) {
         future: viewModel.filteredTasks, // Call filteredTasks asynchronously
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return  Center(child: ToDoItemShimmer());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {

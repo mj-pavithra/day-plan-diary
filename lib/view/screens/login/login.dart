@@ -93,7 +93,7 @@ class _LoginViewState extends State<LoginView> {
                   _emailError!,
                   style: const TextStyle(color: Colors.red),
                 ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 15),
               CustomTextField(
                 labelText: "Password",
                 isPassword: true,
@@ -168,7 +168,7 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 15),
               Center(
                 child: Column(
                   children: [

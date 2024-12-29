@@ -52,6 +52,22 @@ Future<void> addTask(String userId, Task task) async {
     final taskDoc = _firestore.collection('tasks').doc(userId).collection('userTasks').doc(taskId);
     await taskDoc.delete();
   }
+  Future<void> retryFirestoreDelete(String userId, String idFirestore) async {
+  int retries = 3;
+  while (retries > 0) {
+    try {
+      await deleteTask(userId, idFirestore);
+      print('Task deleted from Firestore on retry');
+      return;
+    } catch (e) {
+      retries--;
+      print('Retrying Firestore delete... Retries left: $retries');
+      await Future.delayed(Duration(seconds: 2));
+    }
+  }
+  print('Failed to delete task from Firestore after retries');
+}
+
   void ensureGooglePlayServices() async {
     final GooglePlayServicesAvailability status = await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability();
 

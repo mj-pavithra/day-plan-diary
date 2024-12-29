@@ -1,20 +1,20 @@
-import 'package:day_plan_diary/view/screens/login/login.dart';
-import 'package:day_plan_diary/view/screens/register/register.dart';
-import 'package:day_plan_diary/view/screens/splash/splash.dart';
-import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../view/screens/home/home.dart';
-import '../view/screens/newtask/newtask.dart';
-import '../view/screens/updatetask/updatetask.dart';
+import 'package:day_plan_diary/view/screens/splash/splash.dart';
+import 'package:day_plan_diary/view/screens/login/login.dart';
+import 'package:day_plan_diary/view/screens/register/register.dart';
+import 'package:day_plan_diary/view/screens/home/home.dart';
+import 'package:day_plan_diary/view/screens/newtask/newtask.dart';
+import 'package:day_plan_diary/view/screens/updatetask/updatetask.dart';
+import 'package:day_plan_diary/viewmodels/todoItemViewModel.dart';
 
 final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
-TodoItemViewModel todoListViewModel = TodoItemViewModel();
+final TodoItemViewModel todoListViewModel = TodoItemViewModel();
+
 final appRouter = GoRouter(
-  navigatorKey: _navigatorKey, // This ensures the key is used only once
+  navigatorKey: _navigatorKey,
   routes: [
-  GoRoute(
+    GoRoute(
       path: '/',
       builder: (context, state) => const SplashScreen(),
     ),
@@ -28,8 +28,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) =>  HomePage(
-                ),
+      builder: (context, state) => HomePage(),
     ),
     GoRoute(
       path: '/newtask',
@@ -46,3 +45,18 @@ final appRouter = GoRouter(
     ),
   ],
 );
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      routeInformationParser: appRouter.routeInformationParser,
+      routerDelegate: appRouter.routerDelegate,
+    );
+  }
+}

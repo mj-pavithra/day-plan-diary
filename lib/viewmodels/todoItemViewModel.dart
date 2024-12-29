@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 
 import './todoListViewModel.dart';
 import 'base_viewmodel.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class TodoItemViewModel extends BaseViewModel {
 
@@ -24,7 +25,8 @@ class TodoItemViewModel extends BaseViewModel {
   late final HiveService _hiveService;
   late final FirestoreService _firestoreService;
   final User? user = FirebaseAuth.instance.currentUser;
-  bool _networkAvailable = false;
+  late bool _networkAvailable;
+  final Connectivity _connectivity = Connectivity();
   // final NotificationService _notificationService = NotificationService();
   
   final List<Task> _tasks = [];
@@ -53,13 +55,12 @@ class TodoItemViewModel extends BaseViewModel {
   Future<void> _initializeSession() async {
     session = await SessionService.getInstance(); 
        // Initialize network listener
-    NetworkUtils.initialize();
-    NetworkUtils.onNetworkChange.listen((networkStatus) {
-      _networkAvailable = networkStatus;
-      notifyListeners();
-    });
   }
 
+  Future<bool> _isConnected() async {
+    final connectivityResult = await _connectivity.checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
 
   var ListViewModel = TodoListViewModel();
 
@@ -174,17 +175,25 @@ Future<void> saveTask({
 
     // Create a new task with the incremented ID
     final newTask = task.copyWith(id: id);
+    bool y = await _isConnected();
 
-    await _hiveService.addTask(newTask);
-    
-    if (_networkAvailable) {
+    if (y) {
       try {
         await _firestoreService.addTask(user?.uid ?? '', newTask);
+
+        try{await _hiveService.addTask(newTask);}
+        catch(e){
+          print('Error adding task to hive: $e');
+          throw Exception('Error adding task: $e');
+        }
         SnackbarUtils.showSnackbar("Task saved and synced online", backgroundColor: Colors.green);
       } catch (e) {
+        print('Error saving task to Firestore: $e');
         SnackbarUtils.showSnackbar("Task saved locally, sync failed: $e", backgroundColor: Colors.orange);
       }
     } else {
+
+    await _hiveService.addTask(newTask);
       SnackbarUtils.showSnackbar("Task saved locally, will sync when online", backgroundColor: Colors.orange);
     }
 
@@ -229,29 +238,69 @@ Future<void> saveTask({
   Future<void> deleteTask(Task task, int index) async {
     final idFirestore = task.idFirestore;
     final userId = user?.uid ?? "";
-      try{
-        await _hiveService.deleteTask(index);
-        print('Task deleted from hive');
-        }
-      catch(e){
-        print('Error deleting task from hive: $e');
-        throw Exception('Error deleting task: $e');
-      }
+    _networkAvailable = await NetworkUtils.isNetworkAvailable();
+
+      print('Task ID: $idFirestore, Index: $index, networkAvailable: $_networkAvailable');
+
       if (_networkAvailable) {
       try{
         await _firestoreService.deleteTask(userId, idFirestore);
         print('Task deleted from firestore');
+          try{
+          await _hiveService.deleteTask(index);
+          print('Task deleted from hive in online mode');
+          }
+        catch(e){
+          print('Error deleting task from hive: $e');
+          _firestoreService.retryFirestoreDelete(userId, idFirestore);
+          throw Exception('Error deleting task: $e');
         }
+      }
       catch(e){
         print('Error deleting task from firestore: $e');
         throw Exception('Error deleting task: $e');
       }}
+      else{
+        try{
+          await _hiveService.deleteTask(index);
+          print('Task deleted from hive in offline mode (ViewModel)');
+          }
+        catch(e){
+          print('Error deleting task from hive: $e');
+          throw Exception('Error deleting task: $e');
+        }
+      }
       notifyListeners();
       SnackbarUtils.showSnackbar(
         "Task deleted successfully",
         backgroundColor: Colors.red,
       );
   }
+  //   Future<void> deleteTask(Task task, int index) async {
+  //   final idFirestore = task.idFirestore;
+  //   final userId = user?.uid ?? "";
+  //     try{
+  //       await _hiveService.deleteTask(index);
+  //       print('Task deleted from hive');
+  //       }
+  //     catch(e){
+  //       print('Error deleting task from hive: $e');
+  //       throw Exception('Error deleting task: $e');
+  //     }
+  //     try{
+  //       await _firestoreService.deleteTask(userId, idFirestore);
+  //       print('Task deleted from firestore');
+  //       }
+  //     catch(e){
+  //       print('Error deleting task from firestore: $e');
+  //       throw Exception('Error deleting task: $e');
+  //     }
+  //     notifyListeners();
+  //     SnackbarUtils.showSnackbar(
+  //       "Task deleted successfully",
+  //       backgroundColor: Colors.red,
+  //     );
+  // }
     // Confirms task deletion - displays a confirmation dialog
   Future <bool> confirmDelete (BuildContext context,  Task task, int index) async{
     return await showDialog <bool>(
@@ -310,19 +359,62 @@ Future<void> saveTask({
       },
     );
   }
+  // Future<void> updateTask(Task updatedTask) async {
+  //   int? taskId = HiveService().getTaskKey(updatedTask);
+  //   print("Title: ${updatedTask.title} Index: $taskId updated");
+  //   String userId = _auth.currentUser!.uid;
+  //   String taskKey = updatedTask.idFirestore;
+  //   try {
+  //     await _firestoreService.updateTask(userId, taskKey, updatedTask.toMap());
+  //     await HiveService().updateTask(updatedTask);
+  //     }
+  //   catch(e) {
+  //     print('Error updating task: $e');
+  //     throw Exception('Error updating task: $e');
+  //     }
+  //   notifyListeners();
+  // }
   Future<void> updateTask(Task updatedTask) async {
-    int? taskId = HiveService().getTaskKey(updatedTask);
-    print("Title: ${updatedTask.title} Index: $taskId updated");
-    String userId = _auth.currentUser!.uid;
-    String taskKey = updatedTask.idFirestore;
-    try {
-      await _firestoreService.updateTask(userId, taskKey, updatedTask.toMap());
-      await HiveService().updateTask(updatedTask);
-      }
-    catch(e) {
-      throw Exception('Error updating task: $e');
-      }
-    notifyListeners();
+  // Verify task and user details
+
+    bool isOnline = await _isConnected();
+  if (updatedTask.idFirestore.isEmpty) {
+    print('Error: Task ID is empty.');
+    throw Exception('Task ID cannot be empty.');
   }
+
+  String? userId = _auth.currentUser?.uid;
+  if (userId == null || userId.isEmpty) {
+    print('Error: User ID is empty or null.');
+    throw Exception('User is not logged in.');
+  }
+
+  String taskKey = updatedTask.idFirestore;
+  print('Task ID: $taskKey');
+
+  if( isOnline)
+  {
+    try {
+      // Update Firestore
+      await _firestoreService.updateTask(userId, taskKey, updatedTask.toMap());
+
+      // Update Hive
+      await HiveService().updateTask(updatedTask);
+
+      print('Task updated successfully: ${updatedTask.title}');
+    } catch (e) {
+      print('Error updating task: $e');
+      throw Exception('Error updating task: $e');
+    }
+  }
+  else {
+    // Update Hive
+    await HiveService().updateTask(updatedTask);
+    print('Task updated in hive');
+  }
+
+  notifyListeners();
+}
+
 
 }
